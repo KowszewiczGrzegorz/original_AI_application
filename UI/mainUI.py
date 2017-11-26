@@ -19,12 +19,13 @@ class Main(QWidget):
         self.setGeometry(300, 300, 800, 500)
         self.setWindowTitle(WINDOW_TITLE_MAIN)
         self.setWindowIcon(QIcon(APPLICATION_ICON_PATH))
+        self.setStyleSheet(WINDOW_APPLICATION)
 
         """ボタンウィジェット定義"""
         button_selecting_traincsv = QPushButton(BUTTON_SELECTING_TRAINCSV, self)
         button_selecting_testcsv = QPushButton(BUTTON_SELECTING_TESTCSV, self)
-        button_selecting_traincsv.resize(button_selecting_traincsv.sizeHint())
-        button_selecting_testcsv.resize(button_selecting_testcsv.sizeHint())
+        button_selecting_traincsv.setStyleSheet(BUTTON_STYLE_SELECT_DATA)
+        button_selecting_testcsv.setStyleSheet(BUTTON_STYLE_SELECT_DATA)
         button_selecting_traincsv.clicked.connect(self.__select_csv)
         button_selecting_testcsv.clicked.connect(self.__select_csv)
 
@@ -32,8 +33,15 @@ class Main(QWidget):
         label_displaying_selectfile = QLabel(LABEL_DISPLAYING_SELECTFILE, self)
         self.label_displaying_traincsv = QLabel(NOT_SELECTING, self)
         self.label_displaying_testcsv = QLabel(NOT_SELECTING, self)
-        label_displaying_selectmethod = QLabel(LABEL_DISPLAYING_SELECTMETHOD)
-        self.label_displaying_notselecting = QLabel(LABEL_DISPLAYING_NOTSELECT)
+        label_displaying_selectmethod = QLabel(LABEL_DISPLAYING_SELECTMETHOD, self)
+        self.label_displaying_notselecting = QLabel(LABEL_DISPLAYING_NOTSELECT, self)
+
+        label_displaying_selectfile.setStyleSheet(LABEL_STYLE_BASIC_MSG)
+        self.label_displaying_traincsv.setStyleSheet(LABEL_STYLE_SELECT_DATA)
+        self.label_displaying_testcsv.setStyleSheet(LABEL_STYLE_SELECT_DATA)
+        self.label_displaying_notselecting.setStyleSheet(LABEL_STYLE_NOT_SELECT_DATA)
+        label_displaying_selectmethod.setStyleSheet(LABEL_STYLE_BASIC_MSG)
+
 
         """コンボボックスウィジェット定義"""
         self.combo_selecting_cls_or_prd = QComboBox(self)
@@ -42,6 +50,7 @@ class Main(QWidget):
         self.combo_selecting_cls_or_prd.addItem(COMBO_ITEM_PREDICTOR)
         self.combo_selecting_cls_or_prd.activated[str].connect(self.__show_AI_UI)
         self.combo_selecting_cls_or_prd.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.combo_selecting_cls_or_prd.setStyleSheet(COMBO_STYLE_SELECT_METHOD)
 
         """レイアウト設定"""
         hbox1 = QHBoxLayout()
