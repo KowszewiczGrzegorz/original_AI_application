@@ -16,7 +16,7 @@ class Main(QWidget):
         """初期化"""
 
         """ウィンドウの基本設定"""
-        self.setGeometry(300, 300, 800, 500)
+        self.setGeometry(300, 300, 480, 300)
         self.setWindowTitle(WINDOW_TITLE_MAIN)
         self.setWindowIcon(QIcon(APPLICATION_ICON_PATH))
         self.setStyleSheet(WINDOW_APPLICATION)
@@ -149,7 +149,7 @@ class ClassifierUI(machine_learning_UI):
     def __initialize(self):
         """初期化"""
 
-        self.setGeometry(320, 320, 800, 500)
+        self.setGeometry(320, 320, 480, 300)
         self.setWindowTitle(WINDOW_TITLE_CLASSIFIER)
 
 
@@ -163,5 +163,5 @@ class PredictorUI(machine_learning_UI):
     def __initialize(self):
         """初期化"""
 
-        self.setGeometry(320, 320, 800, 500)
+        self.setGeometry(320, 320, 480, 300)
         self.setWindowTitle(WINDOW_TITLE_PREDICTOR)

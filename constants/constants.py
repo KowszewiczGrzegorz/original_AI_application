@@ -66,12 +66,13 @@ COMBO_STYLE_SELECT_METHOD = 'QComboBox {'\
                             '}'
 
 LABEL_STYLE_NOT_SELECT_DATA = 'QLabel {'\
-                              'background-color: white; color: #ff7700;' \
+                              'background-color: white; color: #ff0000;' \
                               'font-family: Arial; font-size:14px;' \
                               '}'
 
 LABEL_STYLE_BASIC_MSG = 'QLabel {'\
-                        'background-color: white; color: black;' \
-                        'font-family: Arial; font-size:14px;' \
+                        'background-color: white; color: #683400;' \
+                        'font-size:14px; font-family:HGP創英角ﾎﾟｯﾌﾟ体;' \
                         'border-bottom: 1px; border-color: rgb(74, 141, 0, 100); border-style: solid;' \
+                        'padding-bottom: 1px' \
                         '}'
