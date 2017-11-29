@@ -17,10 +17,19 @@ ERROR_MSG_NOTCSV = 'csvファイルを選択してください'
 SUCCESSFULLY_SELECTED = ''
 WINDOW_TITLE_CLASSIFIER = 'classifier'
 WINDOW_TITLE_PREDICTOR = 'predictor'
+LABEL_DISPLAYING_USE_STD = '説明変数の標準化'
+LABEL_DISPLAYING_COMPRESS_METHOD = 'データ圧縮方法選択'
+COMBO_ITEM_METHOD_NOTSELECT = '不使用'
+COMBO_ITEM_SELECT_FEATURES = '特徴量選択'
+COMBO_ITEM_PCA = 'PCA'
+COMBO_ITEM_LDA = 'LDA'
+COMBO_ITEM_KERNEL_PCA = 'カーネルPCA'
+LABEL_DISPLAYING_THRESHOLD = '閾値'
 
 """数値"""
 SPACE_BETWEEN_DATA_AND_METHOD = 15
 INDEX_NOT_SELECTING = 0
+SPACE_BETWEEN_COMPRESS_AND_THRESHOLD = 15
 
 """パス"""
 # なぜか相対パスが使えない
@@ -28,51 +37,92 @@ APPLICATION_ICON_PATH = 'D:/PycharmProjects/original_application/UI/images/icon_
 CSV_DIRECTORY_PATH = './../csv_files'
 
 """スタイル"""
-WINDOW_APPLICATION = "QWidget {" \
-                     "background-color:#ffffff;" \
-                     "}"
+WINDOW_APPLICATION = \
+    "QWidget {" \
+    "background-color:#ffffff;" \
+    "}"
 
-BUTTON_STYLE_SELECT_DATA = 'QPushButton:!pressed {'\
-                           'background-color: white; color: #aaff00;' \
-                           'font-family: Arial; font-weight: bold; font-size:14px;' \
-                           'border-width: 1px; border-color: #aaff00; border-radius: 2px; border-style: solid;' \
-                           'width: 50px;' \
-                           '}' \
-                           'QPushButton:pressed {'\
-                           'background-color: #aaff00; color: white;' \
-                           'font-family: Arial; font-weight: bold; font-size:14px;' \
-                           'border-width: 0px; border-radius: 2px;' \
-                           'width: 50px;' \
-                           '}'
+BUTTON_STYLE_SELECT_DATA = \
+    'QPushButton:!pressed {'\
+    'background-color: white; color: #aaff00;' \
+    'font-family: Arial; font-weight: bold; font-size:14px;' \
+    'border-width: 1px; border-color: #aaff00; border-radius: 2px; border-style: solid;' \
+    'width: 50px;' \
+    '}' \
+    'QPushButton:pressed {'\
+    'background-color: #aaff00; color: white;' \
+    'font-family: Arial; font-weight: bold; font-size:14px;' \
+    'border-width: 0px; border-radius: 2px;' \
+    'width: 50px;' \
+    '}'
 
-LABEL_STYLE_SELECT_DATA = 'QLabel {'\
-                          'background-color: white; color: #4a8d00;' \
-                          'font-family: Arial; font-size:14px;' \
-                          '}'
+LABEL_STYLE_SELECT_DATA = \
+    'QLabel {'\
+    'background-color: white; color: #4a8d00;' \
+    'font-family: Arial; font-size:14px;' \
+    '}'
 
-COMBO_STYLE_SELECT_METHOD = 'QComboBox {'\
-                            'color: #aaff00;' \
-                            'font-family: Arial; font-weight: bold; font-size:14px;' \
-                            'border-width: 1px; border-color: #aaff00; border-radius: 2px; border-style: solid;' \
-                            'width: 45px;' \
-                            'padding-left:3px; padding-right:-14px;' \
-                            '}' \
-                            'QComboBox:drop-down {'\
-                            'border-width: 0px;' \
-                            '}' \
-                            'QFrame {' \
-                            'color: #aaff00;' \
-                            'border: 1px solid #aaff00; border-radius: 2px;' \
-                            '}'
+COMBO_STYLE_SELECT_METHOD = \
+    'QComboBox {'\
+    'color: #aaff00;' \
+    'font-family: Arial; font-weight: bold; font-size:14px;' \
+    'border-width: 1px; border-color: #aaff00; border-radius: 2px; border-style: solid;' \
+    'width: 45px;' \
+    'padding-left:3px; padding-right:-14px;' \
+    '}' \
+    'QComboBox:drop-down {'\
+    'border-width: 0px;' \
+    '}' \
+    'QFrame {' \
+    'color: #aaff00;' \
+    'border: 1px solid #aaff00; border-radius: 2px;' \
+    '}'
 
-LABEL_STYLE_NOT_SELECT_DATA = 'QLabel {'\
-                              'background-color: white; color: #ff0000;' \
-                              'font-family: Arial; font-size:14px;' \
-                              '}'
+LABEL_STYLE_NOT_SELECT_DATA = \
+    'QLabel {'\
+    'background-color: white; color: #ff0000;' \
+    'font-family: Arial; font-size:14px;' \
+    '}'
 
-LABEL_STYLE_BASIC_MSG = 'QLabel {'\
-                        'background-color: white; color: #683400;' \
-                        'font-size:14px; font-family:HGP創英角ﾎﾟｯﾌﾟ体;' \
-                        'border-bottom: 1px; border-color: rgb(74, 141, 0, 100); border-style: solid;' \
-                        'padding-bottom: 1px' \
-                        '}'
+LABEL_STYLE_BASIC_MSG = \
+    'QLabel {'\
+    'color: #683400;' \
+    'font-size:14px; font-family:HGP創英角ﾎﾟｯﾌﾟ体;' \
+    'border-bottom: 1px; border-color: rgb(74, 141, 0, 100); border-style: solid;' \
+    'padding-bottom: 1px' \
+    '}'
+
+CHK_SELECTING_STD = \
+    'QCheckBox:indicator {' \
+    'color: #683400;' \
+    'font-size:14px; font-family:HGP創英角ﾎﾟｯﾌﾟ体;' \
+    '}' \
+    'QLabel {' \
+    'color: #ff0000;' \
+    '}'
+
+COMBO_STYLE_SELECT_COMPRESS = \
+    'QComboBox {'\
+    'color: #aaff00;' \
+    'font-family: Arial; font-weight: bold; font-size:14px;' \
+    'border-width: 1px; border-color: #aaff00; border-radius: 2px; border-style: solid;' \
+    'width: 75px;' \
+    'padding-left:3px; padding-right:-14px;' \
+    '}' \
+    'QComboBox:drop-down {'\
+    'border-width: 0px;' \
+    '}' \
+    'QFrame {' \
+    'color: #aaff00;' \
+    'border: 1px solid #aaff00; border-radius: 2px;' \
+    '}'
+
+LABEL_STYLE_THRESHOLD = \
+    'QLabel {'\
+    'color: #683400;' \
+    '}'
+
+LEDIT_STYLE_THRESHOLD = \
+    'QLineEdit {'\
+    'color: #eeeeee;' \
+    '}'

@@ -37,6 +37,9 @@ class machine_learning:
     def __init__(self):
         pass
 
+    def __to_std(self):
+        pass
+
 
 class Classifier(machine_learning):
     """分類に特化した機械学習処理クラス"""

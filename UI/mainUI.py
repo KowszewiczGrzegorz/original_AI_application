@@ -24,8 +24,10 @@ class Main(QWidget):
         """ボタンウィジェット定義"""
         button_selecting_traincsv = QPushButton(BUTTON_SELECTING_TRAINCSV, self)
         button_selecting_testcsv = QPushButton(BUTTON_SELECTING_TESTCSV, self)
+
         button_selecting_traincsv.setStyleSheet(BUTTON_STYLE_SELECT_DATA)
         button_selecting_testcsv.setStyleSheet(BUTTON_STYLE_SELECT_DATA)
+
         button_selecting_traincsv.clicked.connect(self.__select_csv)
         button_selecting_testcsv.clicked.connect(self.__select_csv)
 
@@ -57,13 +59,16 @@ class Main(QWidget):
         hbox1.addWidget(button_selecting_traincsv)
         hbox1.addWidget(self.label_displaying_traincsv)
         hbox1.addStretch()
+
         hbox2 = QHBoxLayout()
         hbox2.addWidget(button_selecting_testcsv)
         hbox2.addWidget(self.label_displaying_testcsv)
         hbox2.addStretch()
+
         hbox3 = QHBoxLayout()
         hbox3.addWidget(self.combo_selecting_cls_or_prd)
         hbox3.addWidget(self.label_displaying_notselecting)
+
         vbox = QVBoxLayout()
         vbox.addWidget(label_displaying_selectfile)
         vbox.addLayout(hbox1)
@@ -72,6 +77,7 @@ class Main(QWidget):
         vbox.addWidget(label_displaying_selectmethod)
         vbox.addLayout(hbox3)
         vbox.addStretch()
+
         self.setLayout(vbox)
 
         """主制御クラスインスタンス化"""
@@ -137,6 +143,86 @@ class machine_learning_UI(QDialog):
 
     def __init__(self):
         super().__init__()
+        self.__initialize()
+
+    def __initialize(self):
+        """初期化"""
+
+        """ウィンドウの基本設定"""
+        self.setGeometry(320, 320, 480, 300)
+        self.setStyleSheet(WINDOW_APPLICATION)
+
+        """ラベルウィジェット定義"""
+        label_displaying_use_std = QLabel(LABEL_DISPLAYING_USE_STD, self)
+        label_displaying_compress_method = QLabel(LABEL_DISPLAYING_COMPRESS_METHOD, self)
+        self.label_displaying_threshold = QLabel(LABEL_DISPLAYING_THRESHOLD, self)
+
+        label_displaying_use_std.setStyleSheet(LABEL_STYLE_BASIC_MSG)
+        label_displaying_compress_method.setStyleSheet(LABEL_STYLE_BASIC_MSG)
+        # self.label_displaying_threshold.setStyleSheet(LABEL_STYLE_THRESHOLD)
+
+        self.label_displaying_threshold.setEnabled(False)
+
+        """チェックボックスウィジェット定義"""
+        chk_selecting_std_to_train = QCheckBox(BUTTON_SELECTING_TRAINCSV, self)
+        chk_selecting_std_to_test = QCheckBox(BUTTON_SELECTING_TESTCSV, self)
+
+        chk_selecting_std_to_train.setStyleSheet(CHK_SELECTING_STD)
+        chk_selecting_std_to_test.setStyleSheet(CHK_SELECTING_STD)
+
+        """コンボボックスウィジェット定義"""
+        combo_selecting_data_compress_method = QComboBox(self)
+        combo_selecting_data_compress_method.addItem(COMBO_ITEM_METHOD_NOTSELECT)
+        combo_selecting_data_compress_method.addItem(COMBO_ITEM_SELECT_FEATURES)
+        combo_selecting_data_compress_method.addItem(COMBO_ITEM_PCA)
+        combo_selecting_data_compress_method.addItem(COMBO_ITEM_LDA)
+        combo_selecting_data_compress_method.addItem(COMBO_ITEM_KERNEL_PCA)
+        combo_selecting_data_compress_method.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        combo_selecting_data_compress_method.setStyleSheet(COMBO_STYLE_SELECT_COMPRESS)
+        combo_selecting_data_compress_method.activated[str].connect(self.__on_selecting_compress_method)
+
+        """ラインエディットウィジェット定義"""
+        self.ledit_input_threshold = QLineEdit(self)
+
+        self.ledit_input_threshold.setFixedWidth(30)
+
+        # self.ledit_input_threshold.setStyleSheet(LEDIT_STYLE_THRESHOLD)
+
+        self.ledit_input_threshold.setEnabled(False)
+
+        """レイアウト設定"""
+        hbox1 = QHBoxLayout()
+        hbox1.addWidget(chk_selecting_std_to_train)
+        hbox1.addWidget(chk_selecting_std_to_test)
+        hbox1.addStretch()
+
+        hbox2 = QHBoxLayout()
+        hbox2.addWidget(combo_selecting_data_compress_method)
+        hbox2.addSpacing(SPACE_BETWEEN_COMPRESS_AND_THRESHOLD)
+        hbox2.addWidget(self.label_displaying_threshold)
+        hbox2.addWidget(self.ledit_input_threshold)
+        hbox2.addStretch()
+
+        vbox = QVBoxLayout()
+        vbox.addWidget(label_displaying_use_std)
+        vbox.addLayout(hbox1)
+        vbox.addSpacing(SPACE_BETWEEN_DATA_AND_METHOD)
+        vbox.addWidget(label_displaying_compress_method)
+        vbox.addLayout(hbox2)
+        vbox.addStretch()
+
+        self.setLayout(vbox)
+
+    def __on_selecting_compress_method(self, method):
+        """データ圧縮方法プルダウン選択時"""
+
+        """特徴量選択が選ばれた場合は閾値入力ウィジェット有効化"""
+        if COMBO_ITEM_SELECT_FEATURES == method:
+            self.label_displaying_threshold.setEnabled(True)
+            self.ledit_input_threshold.setEnabled(True)
+        else:
+            self.label_displaying_threshold.setEnabled(False)
+            self.ledit_input_threshold.setEnabled(False)
 
 
 class ClassifierUI(machine_learning_UI):
@@ -149,7 +235,7 @@ class ClassifierUI(machine_learning_UI):
     def __initialize(self):
         """初期化"""
 
-        self.setGeometry(320, 320, 480, 300)
+        """ウィンドウの基本設定"""
         self.setWindowTitle(WINDOW_TITLE_CLASSIFIER)
 
 
@@ -163,5 +249,5 @@ class PredictorUI(machine_learning_UI):
     def __initialize(self):
         """初期化"""
 
-        self.setGeometry(320, 320, 480, 300)
+        """ウィンドウの基本設定"""
         self.setWindowTitle(WINDOW_TITLE_PREDICTOR)
