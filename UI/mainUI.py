@@ -170,6 +170,9 @@ class machine_learning_UI(QDialog):
         chk_selecting_std_to_train.setStyleSheet(CHK_SELECTING_STD)
         chk_selecting_std_to_test.setStyleSheet(CHK_SELECTING_STD)
 
+        chk_selecting_std_to_train.stateChanged.connect(self.__on_check_std_chkbutton)
+        chk_selecting_std_to_test.stateChanged.connect(self.__on_check_std_chkbutton)
+
         """コンボボックスウィジェット定義"""
         combo_selecting_data_compress_method = QComboBox(self)
         combo_selecting_data_compress_method.addItem(COMBO_ITEM_METHOD_NOTSELECT)
@@ -212,6 +215,14 @@ class machine_learning_UI(QDialog):
         vbox.addStretch()
 
         self.setLayout(vbox)
+
+    def __on_check_std_chkbutton(self):
+        """データ標準化チェックボックス押下時"""
+
+        """送り主特定"""
+        sender_name = self.sender().text()
+
+        pass
 
     def __on_select_compress_combo(self, method):
         """データ圧縮方法プルダウン選択時"""
