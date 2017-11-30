@@ -28,8 +28,8 @@ class Main(QWidget):
         button_selecting_traincsv.setStyleSheet(BUTTON_STYLE_SELECT_DATA)
         button_selecting_testcsv.setStyleSheet(BUTTON_STYLE_SELECT_DATA)
 
-        button_selecting_traincsv.clicked.connect(self.__select_csv)
-        button_selecting_testcsv.clicked.connect(self.__select_csv)
+        button_selecting_traincsv.clicked.connect(self.__on_press_csv_button)
+        button_selecting_testcsv.clicked.connect(self.__on_press_csv_button)
 
         """ラベルウィジェット定義"""
         label_displaying_selectfile = QLabel(LABEL_DISPLAYING_SELECTFILE, self)
@@ -50,7 +50,7 @@ class Main(QWidget):
         self.combo_selecting_cls_or_prd.addItem(COMBO_ITEM_NOTSELECT)
         self.combo_selecting_cls_or_prd.addItem(COMBO_ITEM_CLASSIFIER)
         self.combo_selecting_cls_or_prd.addItem(COMBO_ITEM_PREDICTOR)
-        self.combo_selecting_cls_or_prd.activated[str].connect(self.__show_AI_UI)
+        self.combo_selecting_cls_or_prd.activated[str].connect(self.__on_select_method_combo)
         self.combo_selecting_cls_or_prd.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.combo_selecting_cls_or_prd.setStyleSheet(COMBO_STYLE_SELECT_METHOD)
 
@@ -83,8 +83,8 @@ class Main(QWidget):
         """主制御クラスインスタンス化"""
         self.main_controler = MainControler()
 
-    def __select_csv(self):
-        """csvファイル選択"""
+    def __on_press_csv_button(self):
+        """csvファイル選択ボタン押下時"""
 
         """送り主特定"""
         sender_name = self.sender().text()
@@ -119,7 +119,7 @@ class Main(QWidget):
                 self.label_displaying_testcsv.setText(file_path[0])
                 self.main_controler.set_test_dataframe(file_path[0])
 
-    def __show_AI_UI(self, text):
+    def __on_select_method_combo(self, text):
         """コンボボックスの選択値により分類または予測のUI表示"""
 
         """トレーニングデータが未選択の場合は分類/予測を選択させない"""
@@ -179,7 +179,7 @@ class machine_learning_UI(QDialog):
         combo_selecting_data_compress_method.addItem(COMBO_ITEM_KERNEL_PCA)
         combo_selecting_data_compress_method.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         combo_selecting_data_compress_method.setStyleSheet(COMBO_STYLE_SELECT_COMPRESS)
-        combo_selecting_data_compress_method.activated[str].connect(self.__on_selecting_compress_method)
+        combo_selecting_data_compress_method.activated[str].connect(self.__on_select_compress_combo)
 
         """ラインエディットウィジェット定義"""
         self.ledit_input_threshold = QLineEdit(self)
@@ -213,7 +213,7 @@ class machine_learning_UI(QDialog):
 
         self.setLayout(vbox)
 
-    def __on_selecting_compress_method(self, method):
+    def __on_select_compress_combo(self, method):
         """データ圧縮方法プルダウン選択時"""
 
         """特徴量選択が選ばれた場合は閾値入力ウィジェット有効化"""
