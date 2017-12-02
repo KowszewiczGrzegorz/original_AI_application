@@ -25,11 +25,20 @@ COMBO_ITEM_PCA = 'PCA'
 COMBO_ITEM_LDA = 'LDA'
 COMBO_ITEM_KERNEL_PCA = 'カーネルPCA'
 LABEL_DISPLAYING_THRESHOLD = '閾値'
+LABEL_DISPLAYING_CLASSIFIER = '分類手法選択'
+LABEL_DISPLAYING_PREDICTOR = '予測手法選択'
+COMBO_ITEM_LINEARREGRESSION = '線形回帰'
+COMBO_ITEM_ELASTICNET = 'Elastic回帰'
+COMBO_ITEM_RANDOMFOREST = 'ランダムフォレスト'
+COMBO_ITEM_EXTRATREE = 'エクストラツリー'
+COMBO_ITEM_DEEPLEARNING = 'ディープラーニング'
+COMBO_ITEM_ROGISTICREGRESSION = 'ロジスティック回帰'
+COMBO_ITEM_SVM = 'SVM'
+COMBO_ITEM_KNEIGHBORS = 'k近傍法'
 
 """数値"""
-SPACE_BETWEEN_DATA_AND_METHOD = 15
+SPACE_BETWEEN_PARTS = 15
 INDEX_NOT_SELECTING = 0
-SPACE_BETWEEN_COMPRESS_AND_THRESHOLD = 15
 
 """パス"""
 # なぜか相対パスが使えない
@@ -65,7 +74,7 @@ LABEL_STYLE_SELECT_DATA = \
 COMBO_STYLE_SELECT_METHOD = \
     'QComboBox {'\
     'color: #aaff00;' \
-    'font-family: Arial; font-weight: bold; font-size:14px;' \
+    'font-weight: bold;' \
     'border-width: 1px; border-color: #aaff00; border-radius: 2px; border-style: solid;' \
     'width: 45px;' \
     'padding-left:3px; padding-right:-14px;' \
@@ -104,7 +113,7 @@ CHK_SELECTING_STD = \
 COMBO_STYLE_SELECT_COMPRESS = \
     'QComboBox {'\
     'color: #aaff00;' \
-    'font-family: Arial; font-weight: bold; font-size:14px;' \
+    'font-weight: bold;' \
     'border-width: 1px; border-color: #aaff00; border-radius: 2px; border-style: solid;' \
     'width: 75px;' \
     'padding-left:3px; padding-right:-14px;' \
@@ -116,6 +125,39 @@ COMBO_STYLE_SELECT_COMPRESS = \
     'color: #aaff00;' \
     'border: 1px solid #aaff00; border-radius: 2px;' \
     '}'
+
+COMBO_STYLE_SELECT_CLASSIFIER = \
+    'QComboBox {' \
+    'color: #aaff00;' \
+    'font-weight: bold;' \
+    'border-width: 1px; border-color: #aaff00; border-radius: 2px; border-style: solid;' \
+    'width: 110;' \
+    'padding-left:3px; padding-right:-14px;' \
+    '}' \
+    'QComboBox:drop-down {'\
+    'border-width: 0px;' \
+    '}' \
+    'QFrame {' \
+    'color: #aaff00;' \
+    'border: 1px solid #aaff00; border-radius: 2px;' \
+    '}'
+
+COMBO_STYLE_SELECT_PREDICTOR = \
+    'QComboBox {'\
+    'color: #aaff00;' \
+    'font-weight: bold;' \
+    'border-width: 1px; border-color: #aaff00; border-radius: 2px; border-style: solid;' \
+    'width: 105;' \
+    'padding-left:3px; padding-right:-14px;' \
+    '}' \
+    'QComboBox:drop-down {'\
+    'border-width: 0px;' \
+    '}' \
+    'QFrame {' \
+    'color: #aaff00;' \
+    'border: 1px solid #aaff00; border-radius: 2px;' \
+    '}'
+
 
 LABEL_STYLE_THRESHOLD = \
     'QLabel {'\

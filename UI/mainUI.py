@@ -10,9 +10,9 @@ class Main(QWidget):
 
     def __init__(self):
         super(Main, self).__init__(None)
-        self.__initialize()
+        self._initialize()
 
-    def __initialize(self):
+    def _initialize(self):
         """初期化"""
 
         """ウィンドウの基本設定"""
@@ -28,8 +28,8 @@ class Main(QWidget):
         button_selecting_traincsv.setStyleSheet(BUTTON_STYLE_SELECT_DATA)
         button_selecting_testcsv.setStyleSheet(BUTTON_STYLE_SELECT_DATA)
 
-        button_selecting_traincsv.clicked.connect(self.__on_press_csv_button)
-        button_selecting_testcsv.clicked.connect(self.__on_press_csv_button)
+        button_selecting_traincsv.clicked.connect(self._on_press_csv_button)
+        button_selecting_testcsv.clicked.connect(self._on_press_csv_button)
 
         """ラベルウィジェット定義"""
         label_displaying_selectfile = QLabel(LABEL_DISPLAYING_SELECTFILE, self)
@@ -50,7 +50,7 @@ class Main(QWidget):
         self.combo_selecting_cls_or_prd.addItem(COMBO_ITEM_NOTSELECT)
         self.combo_selecting_cls_or_prd.addItem(COMBO_ITEM_CLASSIFIER)
         self.combo_selecting_cls_or_prd.addItem(COMBO_ITEM_PREDICTOR)
-        self.combo_selecting_cls_or_prd.activated[str].connect(self.__on_select_method_combo)
+        self.combo_selecting_cls_or_prd.activated[str].connect(self._on_select_method_combo)
         self.combo_selecting_cls_or_prd.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.combo_selecting_cls_or_prd.setStyleSheet(COMBO_STYLE_SELECT_METHOD)
 
@@ -73,7 +73,7 @@ class Main(QWidget):
         vbox.addWidget(label_displaying_selectfile)
         vbox.addLayout(hbox1)
         vbox.addLayout(hbox2)
-        vbox.addSpacing(SPACE_BETWEEN_DATA_AND_METHOD)
+        vbox.addSpacing(SPACE_BETWEEN_PARTS)
         vbox.addWidget(label_displaying_selectmethod)
         vbox.addLayout(hbox3)
         vbox.addStretch()
@@ -83,7 +83,7 @@ class Main(QWidget):
         """主制御クラスインスタンス化"""
         self.main_controler = MainControler()
 
-    def __on_press_csv_button(self):
+    def _on_press_csv_button(self):
         """csvファイル選択ボタン押下時"""
 
         """送り主特定"""
@@ -119,7 +119,7 @@ class Main(QWidget):
                 self.label_displaying_testcsv.setText(file_path[0])
                 self.main_controler.set_test_dataframe(file_path[0])
 
-    def __on_select_method_combo(self, text):
+    def _on_select_method_combo(self, text):
         """コンボボックスの選択値により分類または予測のUI表示"""
 
         """トレーニングデータが未選択の場合は分類/予測を選択させない"""
@@ -143,10 +143,28 @@ class machine_learning_UI(QDialog):
 
     def __init__(self):
         super().__init__()
-        self.__initialize()
 
-    def __initialize(self):
-        """初期化"""
+    def _on_check_std_chkbutton(self):
+        """データ標準化チェックボックス押下時"""
+
+        """送り主特定"""
+        sender_name = self.sender().text()
+
+        pass
+
+    def _on_select_compress_combo(self, method):
+        """データ圧縮方法プルダウン選択時"""
+
+        """特徴量選択が選ばれた場合は閾値入力ウィジェット有効化"""
+        if COMBO_ITEM_SELECT_FEATURES == method:
+            self.label_displaying_threshold.setEnabled(True)
+            self.ledit_input_threshold.setEnabled(True)
+        else:
+            self.label_displaying_threshold.setEnabled(False)
+            self.ledit_input_threshold.setEnabled(False)
+
+    def _make_common_part(self):
+        """分類と予測で共通部分の作成"""
 
         """ウィンドウの基本設定"""
         self.setGeometry(320, 320, 480, 300)
@@ -170,8 +188,8 @@ class machine_learning_UI(QDialog):
         chk_selecting_std_to_train.setStyleSheet(CHK_SELECTING_STD)
         chk_selecting_std_to_test.setStyleSheet(CHK_SELECTING_STD)
 
-        chk_selecting_std_to_train.stateChanged.connect(self.__on_check_std_chkbutton)
-        chk_selecting_std_to_test.stateChanged.connect(self.__on_check_std_chkbutton)
+        chk_selecting_std_to_train.stateChanged.connect(self._on_check_std_chkbutton)
+        chk_selecting_std_to_test.stateChanged.connect(self._on_check_std_chkbutton)
 
         """コンボボックスウィジェット定義"""
         combo_selecting_data_compress_method = QComboBox(self)
@@ -182,7 +200,7 @@ class machine_learning_UI(QDialog):
         combo_selecting_data_compress_method.addItem(COMBO_ITEM_KERNEL_PCA)
         combo_selecting_data_compress_method.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         combo_selecting_data_compress_method.setStyleSheet(COMBO_STYLE_SELECT_COMPRESS)
-        combo_selecting_data_compress_method.activated[str].connect(self.__on_select_compress_combo)
+        combo_selecting_data_compress_method.activated[str].connect(self._on_select_compress_combo)
 
         """ラインエディットウィジェット定義"""
         self.ledit_input_threshold = QLineEdit(self)
@@ -201,7 +219,7 @@ class machine_learning_UI(QDialog):
 
         hbox2 = QHBoxLayout()
         hbox2.addWidget(combo_selecting_data_compress_method)
-        hbox2.addSpacing(SPACE_BETWEEN_COMPRESS_AND_THRESHOLD)
+        hbox2.addSpacing(SPACE_BETWEEN_PARTS)
         hbox2.addWidget(self.label_displaying_threshold)
         hbox2.addWidget(self.ledit_input_threshold)
         hbox2.addStretch()
@@ -209,31 +227,12 @@ class machine_learning_UI(QDialog):
         vbox = QVBoxLayout()
         vbox.addWidget(label_displaying_use_std)
         vbox.addLayout(hbox1)
-        vbox.addSpacing(SPACE_BETWEEN_DATA_AND_METHOD)
+        vbox.addSpacing(SPACE_BETWEEN_PARTS)
         vbox.addWidget(label_displaying_compress_method)
         vbox.addLayout(hbox2)
-        vbox.addStretch()
+        vbox.addSpacing(SPACE_BETWEEN_PARTS)
 
-        self.setLayout(vbox)
-
-    def __on_check_std_chkbutton(self):
-        """データ標準化チェックボックス押下時"""
-
-        """送り主特定"""
-        sender_name = self.sender().text()
-
-        pass
-
-    def __on_select_compress_combo(self, method):
-        """データ圧縮方法プルダウン選択時"""
-
-        """特徴量選択が選ばれた場合は閾値入力ウィジェット有効化"""
-        if COMBO_ITEM_SELECT_FEATURES == method:
-            self.label_displaying_threshold.setEnabled(True)
-            self.ledit_input_threshold.setEnabled(True)
-        else:
-            self.label_displaying_threshold.setEnabled(False)
-            self.ledit_input_threshold.setEnabled(False)
+        return vbox
 
 
 class ClassifierUI(machine_learning_UI):
@@ -241,13 +240,44 @@ class ClassifierUI(machine_learning_UI):
 
     def __init__(self):
         super().__init__()
-        self.__initialize()
+        self._initialize()
 
-    def __initialize(self):
+    def _initialize(self):
         """初期化"""
 
         """ウィンドウの基本設定"""
         self.setWindowTitle(WINDOW_TITLE_CLASSIFIER)
+
+        """ラベルウィジェット定義"""
+        label_displaying_classifier_method = QLabel(LABEL_DISPLAYING_CLASSIFIER, self)
+
+        label_displaying_classifier_method.setStyleSheet(LABEL_STYLE_BASIC_MSG)
+
+        """コンボボックスウィジェット定義"""
+        combo_selecting_analysis_method = QComboBox(self)
+        combo_selecting_analysis_method.addItem(COMBO_ITEM_ROGISTICREGRESSION)
+        combo_selecting_analysis_method.addItem(COMBO_ITEM_SVM)
+        combo_selecting_analysis_method.addItem(COMBO_ITEM_RANDOMFOREST)
+        combo_selecting_analysis_method.addItem(COMBO_ITEM_KNEIGHBORS)
+        combo_selecting_analysis_method.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        combo_selecting_analysis_method.setStyleSheet(COMBO_STYLE_SELECT_CLASSIFIER)
+        combo_selecting_analysis_method.activated[str].connect(self._on_select_analysis_method)
+
+
+        """共通部分作成"""
+        vbox = super()._make_common_part()
+
+        """レイアウト設定"""
+        vbox.addWidget(label_displaying_classifier_method)
+        vbox.addWidget(combo_selecting_analysis_method)
+        vbox.addStretch()
+
+        self.setLayout(vbox)
+
+    def _on_select_analysis_method(self):
+        """分析手法選択時"""
+
+        pass
 
 
 class PredictorUI(machine_learning_UI):
@@ -255,10 +285,41 @@ class PredictorUI(machine_learning_UI):
 
     def __init__(self):
         super().__init__()
-        self.__initialize()
+        self._initialize()
 
-    def __initialize(self):
+    def _initialize(self):
         """初期化"""
 
         """ウィンドウの基本設定"""
         self.setWindowTitle(WINDOW_TITLE_PREDICTOR)
+
+        """ラベルウィジェット定義"""
+        label_displaying_predictor_method = QLabel(LABEL_DISPLAYING_PREDICTOR, self)
+
+        label_displaying_predictor_method.setStyleSheet(LABEL_STYLE_BASIC_MSG)
+
+        """コンボボックスウィジェット定義"""
+        combo_selecting_analysis_method = QComboBox(self)
+        combo_selecting_analysis_method.addItem(COMBO_ITEM_LINEARREGRESSION)
+        combo_selecting_analysis_method.addItem(COMBO_ITEM_ELASTICNET)
+        combo_selecting_analysis_method.addItem(COMBO_ITEM_RANDOMFOREST)
+        combo_selecting_analysis_method.addItem(COMBO_ITEM_EXTRATREE)
+        combo_selecting_analysis_method.addItem(COMBO_ITEM_DEEPLEARNING)
+        combo_selecting_analysis_method.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        combo_selecting_analysis_method.setStyleSheet(COMBO_STYLE_SELECT_PREDICTOR)
+        combo_selecting_analysis_method.activated[str].connect(self._on_select_analysis_method)
+
+        """共通部分作成"""
+        vbox = super()._make_common_part()
+
+        """レイアウト設定"""
+        vbox.addWidget(label_displaying_predictor_method)
+        vbox.addWidget(combo_selecting_analysis_method)
+        vbox.addStretch()
+
+        self.setLayout(vbox)
+
+    def _on_select_analysis_method(self):
+        """分析手法選択時"""
+
+        pass
