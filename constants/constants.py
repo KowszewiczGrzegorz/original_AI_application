@@ -76,8 +76,8 @@ COMBO_STYLE_SELECT_METHOD = \
     'color: #aaff00;' \
     'font-weight: bold;' \
     'border-width: 1px; border-color: #aaff00; border-radius: 2px; border-style: solid;' \
-    'width: 45px;' \
-    'padding-left:3px; padding-right:-14px;' \
+    'width: 39px;' \
+    'padding-left:3px; padding-right:-14px; padding-top:2px; padding-bottom: 2px;' \
     '}' \
     'QComboBox:drop-down {'\
     'border-width: 0px;' \
@@ -115,8 +115,8 @@ COMBO_STYLE_SELECT_COMPRESS = \
     'color: #aaff00;' \
     'font-weight: bold;' \
     'border-width: 1px; border-color: #aaff00; border-radius: 2px; border-style: solid;' \
-    'width: 75px;' \
-    'padding-left:3px; padding-right:-14px;' \
+    'width: 69px;' \
+    'padding-left:3px; padding-right:-14px; padding-top:2px; padding-bottom: 2px;' \
     '}' \
     'QComboBox:drop-down {'\
     'border-width: 0px;' \
@@ -131,8 +131,8 @@ COMBO_STYLE_SELECT_CLASSIFIER = \
     'color: #aaff00;' \
     'font-weight: bold;' \
     'border-width: 1px; border-color: #aaff00; border-radius: 2px; border-style: solid;' \
-    'width: 110;' \
-    'padding-left:3px; padding-right:-14px;' \
+    'width: 92px;' \
+    'padding-left:3px; padding-right:-14px; padding-top:2px; padding-bottom: 2px;' \
     '}' \
     'QComboBox:drop-down {'\
     'border-width: 0px;' \
@@ -147,8 +147,8 @@ COMBO_STYLE_SELECT_PREDICTOR = \
     'color: #aaff00;' \
     'font-weight: bold;' \
     'border-width: 1px; border-color: #aaff00; border-radius: 2px; border-style: solid;' \
-    'width: 105;' \
-    'padding-left:3px; padding-right:-14px;' \
+    'width: 92px;' \
+    'padding-left:3px; padding-right:-14px; padding-top:2px; padding-bottom: 2px;' \
     '}' \
     'QComboBox:drop-down {'\
     'border-width: 0px;' \
