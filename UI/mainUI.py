@@ -163,6 +163,11 @@ class machine_learning_UI(QDialog):
             self.label_displaying_threshold.setEnabled(False)
             self.ledit_input_threshold.setEnabled(False)
 
+    def _on_input_threshold(self, text):
+        """閾値入力時"""
+
+        pass
+
     def _make_common_part(self):
         """分類と予測で共通部分の作成"""
 
@@ -204,12 +209,10 @@ class machine_learning_UI(QDialog):
 
         """ラインエディットウィジェット定義"""
         self.ledit_input_threshold = QLineEdit(self)
-
         self.ledit_input_threshold.setFixedWidth(30)
-
         # self.ledit_input_threshold.setStyleSheet(LEDIT_STYLE_THRESHOLD)
-
         self.ledit_input_threshold.setEnabled(False)
+        self.ledit_input_threshold.textChanged[str].connect(self._on_input_threshold)
 
         """レイアウト設定"""
         hbox1 = QHBoxLayout()
@@ -255,6 +258,7 @@ class ClassifierUI(machine_learning_UI):
 
         """コンボボックスウィジェット定義"""
         combo_selecting_analysis_method = QComboBox(self)
+        combo_selecting_analysis_method.addItem(COMBO_ITEM_PERCEPTRON)
         combo_selecting_analysis_method.addItem(COMBO_ITEM_ROGISTICREGRESSION)
         combo_selecting_analysis_method.addItem(COMBO_ITEM_SVM)
         combo_selecting_analysis_method.addItem(COMBO_ITEM_RANDOMFOREST)
@@ -262,7 +266,6 @@ class ClassifierUI(machine_learning_UI):
         combo_selecting_analysis_method.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         combo_selecting_analysis_method.setStyleSheet(COMBO_STYLE_SELECT_CLASSIFIER)
         combo_selecting_analysis_method.activated[str].connect(self._on_select_analysis_method)
-
 
         """共通部分作成"""
         vbox = super()._make_common_part()
