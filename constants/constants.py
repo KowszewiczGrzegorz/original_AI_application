@@ -18,7 +18,7 @@ SUCCESSFULLY_SELECTED = ''
 WINDOW_TITLE_CLASSIFIER = 'classifier'
 WINDOW_TITLE_PREDICTOR = 'predictor'
 LABEL_DISPLAYING_USE_STD = '説明変数の標準化'
-LABEL_DISPLAYING_COMPRESS_METHOD = 'データ圧縮方法選択'
+PARAM_COMPRESS_METHOD = 'データ圧縮方法選択'
 COMBO_ITEM_METHOD_NOTSELECT = '不使用'
 COMBO_ITEM_SELECT_FEATURES = '特徴量選択'
 COMBO_ITEM_PCA = 'PCA'
@@ -36,10 +36,30 @@ COMBO_ITEM_PERCEPTRON = 'パーセプトロン'
 COMBO_ITEM_ROGISTICREGRESSION = 'ロジスティック回帰'
 COMBO_ITEM_SVM = 'SVM'
 COMBO_ITEM_KNEIGHBORS = 'k近傍法'
+PARAM_PENALTY = 'penalty'
+PARAM_KERNEL = 'kernel'
+PARAM_ETA0 = 'eta0'
+PARAM_C = 'C'
+PARAM_GAMMA = 'gamma'
+PARAM_TREE = 'n_trees'
+PARAM_NEIGHBORS = 'n_neighbors'
+PARAM_ALPHA = 'alpha'
+PARAM_L1RATIO = 'r1_ratio'
+PARAM_MAXDEPTH = 'n_max_depth'
+PARAM_MAXFEATURES = 'n_max_features'
+PARAM_NESTIMATORS = 'n_estimators'
+COMBO_ITEM_L1 = 'L1'
+COMBO_ITEM_L2 = 'L2'
+COMBO_ITEM_RBF = 'RBF'
+COMBO_ITEM_LINEAR = 'linear'
 
 """数値"""
 SPACE_BETWEEN_PARTS = 15
 INDEX_NOT_SELECTING = 0
+LEDIT_WIDTH_THRESHOLD = 30
+LEDIT_WIDTH_PARAMS = 30
+WIDTH_PARAM_LABEL = 100
+SPACE_BETWEEN_PARAMS = 15
 
 """パス"""
 # なぜか相対パスが使えない
@@ -159,7 +179,6 @@ COMBO_STYLE_SELECT_PREDICTOR = \
     'border: 1px solid #aaff00; border-radius: 2px;' \
     '}'
 
-
 LABEL_STYLE_THRESHOLD = \
     'QLabel {'\
     'color: #683400;' \
@@ -168,4 +187,33 @@ LABEL_STYLE_THRESHOLD = \
 LEDIT_STYLE_THRESHOLD = \
     'QLineEdit {'\
     'color: #eeeeee;' \
+    '}'
+
+LABEL_STYLE_PARAM_VALID = \
+    'QLabel {'\
+    'background-color: white; color: #4a8d00;' \
+    'font-family: Arial;' \
+    '}'
+
+LABEL_STYLE_PARAM_INVALID = \
+    'QLabel {'\
+    'background-color: white; color: gray;' \
+    'width: 90px;' \
+    'font-family: Arial;' \
+    '}'
+
+COMBO_STYLE_SELECT_PARAMS = \
+    'QComboBox {'\
+    'color: gray;' \
+    'font-weight: bold;' \
+    'border-width: 1px; border-color: gray; border-radius: 2px; border-style: solid;' \
+    'width: 69px;' \
+    'padding-left:3px; padding-right:-14px; padding-top:2px; padding-bottom: 2px;' \
+    '}' \
+    'QComboBox:drop-down {'\
+    'border-width: 0px;' \
+    '}' \
+    'QFrame {' \
+    'color: gray;' \
+    'border: 1px solid gray; border-radius: 2px;' \
     '}'
