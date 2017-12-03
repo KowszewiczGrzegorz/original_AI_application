@@ -388,7 +388,7 @@ class machine_learning_UI(QDialog):
 
         return vbox
 
-    def _make_running_machine_learning_part(self, vbox):
+    def _make_running_machine_learning_part(self, vbox, button):
         """学習・予測実行部作成"""
 
         """ラベルウィジェット定義"""
@@ -396,22 +396,15 @@ class machine_learning_UI(QDialog):
         label_displaying_running.setStyleSheet(LABEL_STYLE_BASIC_MSG)
 
         """ボタンウィジェット定義"""
-        button_running_machine_learning = QPushButton(BUTTON_RUNNING_MACHINE_LEARNING, self)
-        button_running_machine_learning.setStyleSheet(BUTTON_STYLE_RUNNING_MACHINE_LEARNING)
-        button_running_machine_learning.clicked.connect(self._on_clicked_running_button)
+        button.setStyleSheet(BUTTON_STYLE_RUNNING_MACHINE_LEARNING)
 
         """レイアウト設定"""
         vbox.addSpacing(SPACE_BETWEEN_PARTS)
         vbox.addWidget(label_displaying_running)
-        vbox.addWidget(button_running_machine_learning)
+        vbox.addWidget(button)
 
         return vbox
 
-    def _on_clicked_running_button(self):
-        """学習・予測実行ボタン押下時"""
-
-        print("run")
-    
     def disable_test_std_checkbox(self):
         """テストデータ標準化チェックボックス無効化"""
 
@@ -510,6 +503,10 @@ class ClassifierUI(machine_learning_UI):
         self.ledit_param_neighbors.setAccessibleName(PARAM_NEIGHBORS)
         self.ledit_param_nestimators.setAccessibleName(PARAM_NESTIMATORS)
 
+        """ボタンウィジェット定義"""
+        button_running_machine_learning = QPushButton(BUTTON_RUNNING_MACHINE_LEARNING, self)
+        button_running_machine_learning.clicked.connect(self._on_clicked_running_button)
+
         """共通部分作成"""
         vbox = super()._make_std_and_compress_part()
 
@@ -536,7 +533,7 @@ class ClassifierUI(machine_learning_UI):
         
         vbox = super()._make_bag_and_ada_part(vbox)
 
-        vbox = super()._make_running_machine_learning_part(vbox)
+        vbox = super()._make_running_machine_learning_part(vbox, button_running_machine_learning)
 
         self.setLayout(vbox)
 
@@ -592,6 +589,11 @@ class ClassifierUI(machine_learning_UI):
         super()._valid_param_wiget_by_method(self.param_label_wigets,
                                              self.param_input_wigets,
                                              valid_ids)
+
+    def _on_clicked_running_button(self):
+        """学習・予測実行ボタン押下時"""
+
+        print("classifier run")
 
 
 class PredictorUI(machine_learning_UI):
@@ -692,6 +694,10 @@ class PredictorUI(machine_learning_UI):
         self.ledit_param_nunit.setAccessibleName(PARAM_NUNIT)
         self.ledit_param_keepdroop.setAccessibleName(PARAM_KEEPDROP)
 
+        """ボタンウィジェット定義"""
+        button_running_machine_learning = QPushButton(BUTTON_RUNNING_MACHINE_LEARNING, self)
+        button_running_machine_learning.clicked.connect(self._on_clicked_running_button)
+
         """共通部分作成"""
         vbox = super()._make_std_and_compress_part()
 
@@ -722,7 +728,7 @@ class PredictorUI(machine_learning_UI):
 
         vbox = super()._make_bag_and_ada_part(vbox)
 
-        vbox = super()._make_running_machine_learning_part(vbox)
+        vbox = super()._make_running_machine_learning_part(vbox, button_running_machine_learning)
 
         self.setLayout(vbox)
 
@@ -788,3 +794,8 @@ class PredictorUI(machine_learning_UI):
         super()._valid_param_wiget_by_method(self.param_label_wigets,
                                              self.param_input_wigets,
                                              valid_ids)
+
+    def _on_clicked_running_button(self):
+        """学習・予測実行ボタン押下時"""
+
+        print("predictor run")
