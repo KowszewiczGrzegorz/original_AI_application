@@ -20,7 +20,13 @@ class MainControler:
 
     def get_train_dataframe(self):
         """トレーニングDataFrameメンバ変数取得"""
+
         return self.df_train
+
+    def get_test_dataframe(self):
+        """テストDataFrameメンバ変数取得"""
+
+        return self.df_test
 
     def delete_train_dataframe(self):
         """トレーニングデータの削除"""

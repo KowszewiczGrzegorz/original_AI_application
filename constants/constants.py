@@ -48,15 +48,24 @@ PARAM_L1RATIO = 'r1_ratio'
 PARAM_MAXDEPTH = 'n_max_depth'
 PARAM_MAXFEATURES = 'n_max_features'
 PARAM_NESTIMATORS = 'n_estimators'
+PARAM_BATCHSIZE = 'n_batch_size'
+PARAM_NHIDDEN = 'n_hidden'
+PARAM_NUNIT = 'n_unit'
+PARAM_KEEPDROP = 'keep_drop'
+PARAM_MAXSAMPLES = 'n_max_samples'
+PARAM_LEARNINGRATE = 'learning_rate'
 COMBO_ITEM_L1 = 'L1'
 COMBO_ITEM_L2 = 'L2'
 COMBO_ITEM_RBF = 'RBF'
 COMBO_ITEM_LINEAR = 'linear'
+LABEL_DISPLAYING_BAG_ADA = 'バギング/アダブースト設定'
+COMBO_ITEM_BAGGING = 'バギング'
+COMBO_ITEM_ADABOOST = 'アダブースト'
 
 """数値"""
 SPACE_BETWEEN_PARTS = 15
 INDEX_NOT_SELECTING = 0
-LEDIT_WIDTH_THRESHOLD = 30
+LEDIT_WIDTH_THRESHOLD = 50
 LEDIT_WIDTH_PARAMS = 30
 WIDTH_PARAM_LABEL = 100
 SPACE_BETWEEN_PARAMS = 15
@@ -110,14 +119,14 @@ COMBO_STYLE_SELECT_METHOD = \
 
 LABEL_STYLE_NOT_SELECT_DATA = \
     'QLabel {'\
-    'background-color: white; color: #ff0000;' \
+    'background-color: white; color: #CCCC00;' \
     'font-family: Arial; font-size:14px;' \
     '}'
 
 LABEL_STYLE_BASIC_MSG = \
     'QLabel {'\
     'color: #683400;' \
-    'font-size:14px; font-family:HGP創英角ﾎﾟｯﾌﾟ体;' \
+    'font-size:14px; font-family:HGS創英角ｺﾞｼｯｸUB;' \
     'border-bottom: 1px; border-color: rgb(74, 141, 0, 100); border-style: solid;' \
     'padding-bottom: 1px' \
     '}'
@@ -202,7 +211,7 @@ LABEL_STYLE_PARAM_INVALID = \
     'font-family: Arial;' \
     '}'
 
-COMBO_STYLE_SELECT_PARAMS = \
+INPUT_STYLE_PARAMS_VALID = \
     'QComboBox {'\
     'color: gray;' \
     'font-weight: bold;' \
@@ -216,4 +225,28 @@ COMBO_STYLE_SELECT_PARAMS = \
     'QFrame {' \
     'color: gray;' \
     'border: 1px solid gray; border-radius: 2px;' \
+    '}' \
+    'QLineEdit {' \
+    'color: #4a8d00; background-color: #f0fff6;' \
+    'border-width: 0px; border-radius: 2px;' \
+    '}'
+
+INPUT_STYLE_PARAMS_INVALID = \
+    'QComboBox {'\
+    'color: white;' \
+    'font-weight: bold;' \
+    'border-width: 1px; border-color: gray; border-radius: 2px; border-style: solid;' \
+    'width: 69px;' \
+    'padding-left:3px; padding-right:-14px; padding-top:2px; padding-bottom: 2px;' \
+    '}' \
+    'QComboBox:drop-down {'\
+    'border-width: 0px;' \
+    '}' \
+    'QFrame {' \
+    'color: gray;' \
+    'border: 1px solid gray; border-radius: 2px;' \
+    '}' \
+    'QLineEdit {' \
+    'color: #f0fff6; background-color: #f0fff6;' \
+    'border-width: 0px; border-radius: 2px;' \
     '}'
