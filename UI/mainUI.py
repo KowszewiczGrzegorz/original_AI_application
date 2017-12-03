@@ -387,6 +387,30 @@ class machine_learning_UI(QDialog):
         vbox.addSpacing(SPACE_BETWEEN_PARTS)
 
         return vbox
+
+    def _make_running_machine_learning_part(self, vbox):
+        """学習・予測実行部作成"""
+
+        """ラベルウィジェット定義"""
+        label_displaying_running = QLabel(LABEL_DISPLAYING_RUNNING, self)
+        label_displaying_running.setStyleSheet(LABEL_STYLE_BASIC_MSG)
+
+        """ボタンウィジェット定義"""
+        button_running_machine_learning = QPushButton(BUTTON_RUNNING_MACHINE_LEARNING, self)
+        button_running_machine_learning.setStyleSheet(BUTTON_STYLE_RUNNING_MACHINE_LEARNING)
+        button_running_machine_learning.clicked.connect(self._on_clicked_running_button)
+
+        """レイアウト設定"""
+        vbox.addSpacing(SPACE_BETWEEN_PARTS)
+        vbox.addWidget(label_displaying_running)
+        vbox.addWidget(button_running_machine_learning)
+
+        return vbox
+
+    def _on_clicked_running_button(self):
+        """学習・予測実行ボタン押下時"""
+
+        print("run")
     
     def disable_test_std_checkbox(self):
         """テストデータ標準化チェックボックス無効化"""
@@ -512,7 +536,7 @@ class ClassifierUI(machine_learning_UI):
         
         vbox = super()._make_bag_and_ada_part(vbox)
 
-        vbox.addStretch()
+        vbox = super()._make_running_machine_learning_part(vbox)
 
         self.setLayout(vbox)
 
@@ -698,7 +722,7 @@ class PredictorUI(machine_learning_UI):
 
         vbox = super()._make_bag_and_ada_part(vbox)
 
-        vbox.addStretch()
+        vbox = super()._make_running_machine_learning_part(vbox)
 
         self.setLayout(vbox)
 

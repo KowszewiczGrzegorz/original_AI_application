@@ -61,6 +61,8 @@ COMBO_ITEM_LINEAR = 'linear'
 LABEL_DISPLAYING_BAG_ADA = 'バギング/アダブースト設定'
 COMBO_ITEM_BAGGING = 'バギング'
 COMBO_ITEM_ADABOOST = 'アダブースト'
+LABEL_DISPLAYING_RUNNING = '機械学習実行'
+BUTTON_RUNNING_MACHINE_LEARNING = '実行'
 
 """数値"""
 SPACE_BETWEEN_PARTS = 15
@@ -71,9 +73,8 @@ WIDTH_PARAM_LABEL = 100
 SPACE_BETWEEN_PARAMS = 15
 
 """パス"""
-# なぜか相対パスが使えない
-APPLICATION_ICON_PATH = 'D:/PycharmProjects/original_application/UI/images/icon_ai.png'
-CSV_DIRECTORY_PATH = './../csv_files'
+APPLICATION_ICON_PATH = '../UI/images/icon_ai.png'
+CSV_DIRECTORY_PATH = '../csv_files'
 
 """スタイル"""
 WINDOW_APPLICATION = \
@@ -248,5 +249,20 @@ INPUT_STYLE_PARAMS_INVALID = \
     '}' \
     'QLineEdit {' \
     'color: #f0fff6; background-color: #f0fff6;' \
+    'border-width: 0px; border-radius: 2px;' \
+    '}'
+
+BUTTON_STYLE_RUNNING_MACHINE_LEARNING = \
+    'QPushButton {'\
+    'font-family: Arial; font-weight: bold; font-size:14px;' \
+    'width: 50px;' \
+    'padding: 5px' \
+    '}' \
+    'QPushButton:!pressed {'\
+    'background-color: white; color: #aaff00;' \
+    'border-width: 1px; border-color: #aaff00; border-radius: 2px; border-style: solid;' \
+    '}' \
+    'QPushButton:pressed {'\
+    'background-color: #aaff00; color: white;' \
     'border-width: 0px; border-radius: 2px;' \
     '}'
