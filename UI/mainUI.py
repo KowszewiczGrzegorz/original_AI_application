@@ -2,7 +2,7 @@ from constants.constants import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from control.mainControler import MainControler
+from control.mainControler import MainControler, Classifier, Predictor
 
 
 class Main(QWidget):
@@ -10,6 +10,10 @@ class Main(QWidget):
 
     def __init__(self):
         super(Main, self).__init__(None)
+
+        """主制御クラスインスタンス化"""
+        self.main_controler = MainControler()
+
         self._initialize()
 
     def _initialize(self):
@@ -80,9 +84,6 @@ class Main(QWidget):
 
         self.setLayout(vbox)
 
-        """主制御クラスインスタンス化"""
-        self.main_controler = MainControler()
-
     def _on_press_csv_button(self):
         """csvファイル選択ボタン押下時"""
 
@@ -130,17 +131,23 @@ class Main(QWidget):
             self.combo_selecting_cls_or_prd.setCurrentIndex(0)
             return
 
-        """分類または予測ダイアログ表示し、テストデータ標準化チェックボックス無効化"""
+        """分類または予測ダイアログ表示"""
         if COMBO_ITEM_CLASSIFIER == text:
             classifierUI = ClassifierUI()
-            if test_df is None:
-                classifierUI.disable_test_std_checkbox()
+            classifierUI.set_df_train(train_df)
+
+            if test_df is not None:
+                classifierUI.set_df_test(test_df)
+
             classifierUI.exec_()
 
         elif COMBO_ITEM_PREDICTOR == text:
             predictorUI = PredictorUI()
-            if test_df is None:
-                predictorUI.disable_test_std_checkbox()
+            predictorUI.set_df_train(train_df)
+
+            if test_df is not None:
+                predictorUI.set_df_test(test_df)
+
             predictorUI.exec_()
         # プルダウンが「未選択」のままの場合はスルー
         else:
@@ -153,13 +160,18 @@ class machine_learning_UI(QDialog):
     def __init__(self):
         super().__init__()
 
-    def _on_check_std_chkbutton(self):
+        self.df_train = None
+        self.df_test = None
+        self.do_std = False
+
+    def _on_check_std_chkbutton(self, state):
         """データ標準化チェックボックス押下時"""
 
-        """送り主特定"""
-        sender_name = self.sender().text()
-
-        pass
+        """標準化フラグON/OFF"""
+        if Qt.Checked == state:
+            self.do_std = True
+        else:
+            self.do_std = False
 
     def _on_select_compress_combo(self, method):
         """データ圧縮方法プルダウン選択時"""
@@ -232,6 +244,69 @@ class machine_learning_UI(QDialog):
                 label_wiget.setStyleSheet(LABEL_STYLE_PARAM_INVALID)
                 input_wiget.setEnabled(False)
                 input_wiget.setStyleSheet(INPUT_STYLE_PARAMS_INVALID)
+
+    def _make_std_and_compress_part(self):
+        """データ標準化・圧縮部の作成"""
+
+        """ウィンドウの基本設定"""
+        self.setGeometry(320, 320, 0, 0)
+        self.setStyleSheet(WINDOW_APPLICATION)
+
+        """ラベルウィジェット定義"""
+        label_displaying_use_std = QLabel(LABEL_DISPLAYING_USE_STD, self)
+        PARAM_Compress_method = QLabel(PARAM_COMPRESS_METHOD, self)
+        self.label_displaying_threshold = QLabel(LABEL_DISPLAYING_THRESHOLD, self)
+
+        label_displaying_use_std.setStyleSheet(LABEL_STYLE_BASIC_MSG)
+        PARAM_Compress_method.setStyleSheet(LABEL_STYLE_BASIC_MSG)
+        # self.label_displaying_threshold.setStyleSheet(LABEL_STYLE_THRESHOLD)
+
+        self.label_displaying_threshold.setEnabled(False)
+
+        """チェックボックスウィジェット定義"""
+        self.chk_selecting_std = QCheckBox(CHK_SELECTING_STD, self)
+        self.chk_selecting_std.setStyleSheet(CHK_SELECTING_STD)
+        self.chk_selecting_std.stateChanged.connect(self._on_check_std_chkbutton)
+
+        """コンボボックスウィジェット定義"""
+        combo_selecting_data_compress_method = QComboBox(self)
+        combo_selecting_data_compress_method.addItem(COMBO_ITEM_METHOD_NOTSELECT)
+        combo_selecting_data_compress_method.addItem(COMBO_ITEM_SELECT_FEATURES)
+        combo_selecting_data_compress_method.addItem(COMBO_ITEM_PCA)
+        combo_selecting_data_compress_method.addItem(COMBO_ITEM_LDA)
+        combo_selecting_data_compress_method.addItem(COMBO_ITEM_KERNEL_PCA)
+        combo_selecting_data_compress_method.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        combo_selecting_data_compress_method.setStyleSheet(COMBO_STYLE_SELECT_COMPRESS)
+        combo_selecting_data_compress_method.activated[str].connect(self._on_select_compress_combo)
+
+        """ラインエディットウィジェット定義"""
+        self.ledit_input_threshold = QLineEdit(self)
+        self.ledit_input_threshold.setFixedWidth(LEDIT_WIDTH_THRESHOLD)
+        self.ledit_input_threshold.setEnabled(False)
+        self.ledit_input_threshold.textChanged[str].connect(self._on_input_threshold)
+        self.ledit_input_threshold.setStyleSheet(INPUT_STYLE_PARAMS_INVALID)
+
+        """レイアウト設定"""
+        hbox1 = QHBoxLayout()
+        hbox1.addWidget(self.chk_selecting_std)
+        hbox1.addStretch()
+
+        hbox2 = QHBoxLayout()
+        hbox2.addWidget(combo_selecting_data_compress_method)
+        hbox2.addSpacing(SPACE_BETWEEN_PARTS)
+        hbox2.addWidget(self.label_displaying_threshold)
+        hbox2.addWidget(self.ledit_input_threshold)
+        hbox2.addStretch()
+
+        vbox = QVBoxLayout()
+        vbox.addWidget(label_displaying_use_std)
+        vbox.addLayout(hbox1)
+        vbox.addSpacing(SPACE_BETWEEN_PARTS)
+        vbox.addWidget(PARAM_Compress_method)
+        vbox.addLayout(hbox2)
+        vbox.addSpacing(SPACE_BETWEEN_PARTS)
+
+        return vbox
 
     def _make_bag_and_ada_part(self, vbox):
         """バギング・アダブースト部の作成"""
@@ -319,75 +394,6 @@ class machine_learning_UI(QDialog):
 
         return vbox
 
-    def _make_std_and_compress_part(self):
-        """データ標準化・圧縮部の作成"""
-
-        """ウィンドウの基本設定"""
-        self.setGeometry(320, 320, 0, 0)
-        self.setStyleSheet(WINDOW_APPLICATION)
-
-        """ラベルウィジェット定義"""
-        label_displaying_use_std = QLabel(LABEL_DISPLAYING_USE_STD, self)
-        PARAM_Compress_method = QLabel(PARAM_COMPRESS_METHOD, self)
-        self.label_displaying_threshold = QLabel(LABEL_DISPLAYING_THRESHOLD, self)
-
-        label_displaying_use_std.setStyleSheet(LABEL_STYLE_BASIC_MSG)
-        PARAM_Compress_method.setStyleSheet(LABEL_STYLE_BASIC_MSG)
-        # self.label_displaying_threshold.setStyleSheet(LABEL_STYLE_THRESHOLD)
-
-        self.label_displaying_threshold.setEnabled(False)
-
-        """チェックボックスウィジェット定義"""
-        self.chk_selecting_std_to_train = QCheckBox(BUTTON_SELECTING_TRAINCSV, self)
-        self.chk_selecting_std_to_test = QCheckBox(BUTTON_SELECTING_TESTCSV, self)
-
-        self.chk_selecting_std_to_train.setStyleSheet(CHK_SELECTING_STD)
-        self.chk_selecting_std_to_test.setStyleSheet(CHK_SELECTING_STD)
-
-        self.chk_selecting_std_to_train.stateChanged.connect(self._on_check_std_chkbutton)
-        self.chk_selecting_std_to_test.stateChanged.connect(self._on_check_std_chkbutton)
-
-        """コンボボックスウィジェット定義"""
-        combo_selecting_data_compress_method = QComboBox(self)
-        combo_selecting_data_compress_method.addItem(COMBO_ITEM_METHOD_NOTSELECT)
-        combo_selecting_data_compress_method.addItem(COMBO_ITEM_SELECT_FEATURES)
-        combo_selecting_data_compress_method.addItem(COMBO_ITEM_PCA)
-        combo_selecting_data_compress_method.addItem(COMBO_ITEM_LDA)
-        combo_selecting_data_compress_method.addItem(COMBO_ITEM_KERNEL_PCA)
-        combo_selecting_data_compress_method.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        combo_selecting_data_compress_method.setStyleSheet(COMBO_STYLE_SELECT_COMPRESS)
-        combo_selecting_data_compress_method.activated[str].connect(self._on_select_compress_combo)
-
-        """ラインエディットウィジェット定義"""
-        self.ledit_input_threshold = QLineEdit(self)
-        self.ledit_input_threshold.setFixedWidth(LEDIT_WIDTH_THRESHOLD)
-        self.ledit_input_threshold.setEnabled(False)
-        self.ledit_input_threshold.textChanged[str].connect(self._on_input_threshold)
-        self.ledit_input_threshold.setStyleSheet(INPUT_STYLE_PARAMS_INVALID)
-
-        """レイアウト設定"""
-        hbox1 = QHBoxLayout()
-        hbox1.addWidget(self.chk_selecting_std_to_train)
-        hbox1.addWidget(self.chk_selecting_std_to_test)
-        hbox1.addStretch()
-
-        hbox2 = QHBoxLayout()
-        hbox2.addWidget(combo_selecting_data_compress_method)
-        hbox2.addSpacing(SPACE_BETWEEN_PARTS)
-        hbox2.addWidget(self.label_displaying_threshold)
-        hbox2.addWidget(self.ledit_input_threshold)
-        hbox2.addStretch()
-
-        vbox = QVBoxLayout()
-        vbox.addWidget(label_displaying_use_std)
-        vbox.addLayout(hbox1)
-        vbox.addSpacing(SPACE_BETWEEN_PARTS)
-        vbox.addWidget(PARAM_Compress_method)
-        vbox.addLayout(hbox2)
-        vbox.addSpacing(SPACE_BETWEEN_PARTS)
-
-        return vbox
-
     def _make_running_machine_learning_part(self, vbox, button):
         """学習・予測実行部作成"""
 
@@ -405,10 +411,29 @@ class machine_learning_UI(QDialog):
 
         return vbox
 
-    def disable_test_std_checkbox(self):
-        """テストデータ標準化チェックボックス無効化"""
+    def set_df_train(self, df):
+        """トレーニングデータ設定"""
 
-        self.chk_selecting_std_to_test.setDisabled(True)
+        self.df_train = df
+
+    def set_df_test(self, df):
+        """テストデータ設定"""
+
+        self.df_test = df
+
+    def set_datas(self, method_object):
+        """分類/予測オブジェクトにデータ設定"""
+
+        method_object.set_df_train(self.df_train)
+        if self.df_test is not None:
+            method_object.set_df_test(self.df_test)
+
+    def standardize_datas(self, method_object):
+        """データの標準化"""
+
+        """標準化チェック時のみ標準化メソッド呼び出し"""
+        if self.do_std:
+            method_object.standardize_datas()
 
 
 class ClassifierUI(machine_learning_UI):
@@ -591,9 +616,16 @@ class ClassifierUI(machine_learning_UI):
                                              valid_ids)
 
     def _on_clicked_running_button(self):
-        """学習・予測実行ボタン押下時"""
+        """学習実行ボタン押下時"""
 
-        print("classifier run")
+        """分類オブジェクト作成"""
+        classifier = Classifier()
+
+        """データ設定"""
+        super().set_datas(classifier)
+
+        """データ標準化"""
+        super().standardize_datas(classifier)
 
 
 class PredictorUI(machine_learning_UI):
@@ -796,6 +828,6 @@ class PredictorUI(machine_learning_UI):
                                              valid_ids)
 
     def _on_clicked_running_button(self):
-        """学習・予測実行ボタン押下時"""
+        """学習ボタン押下時"""
 
         print("predictor run")

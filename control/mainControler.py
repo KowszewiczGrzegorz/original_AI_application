@@ -1,4 +1,4 @@
-import pandas as pd
+from lib import *
 
 
 class MainControler:
@@ -40,11 +40,23 @@ class MainControler:
 class machine_learning:
     """機械学習処理のベースクラス"""
 
-    def __init__(self):
-        pass
+    def set_df_train(self, df):
+        """トレーニングデータ設定"""
 
-    def _to_std(self):
-        pass
+        self.df_train_X = df.iloc[:, 2:]
+        self.df_train_Y = df.iloc[:, 1]
+
+    def set_df_test(self, df):
+        """テストデータ設定"""
+
+        self.test_ID = df.iloc[:, 0]
+        self.df_test = df.iloc[:, 1:]
+
+    def standardize_datas(self):
+        """データ標準化"""
+
+        self.df_train_X = standardize_datas(self.df_train_X)
+        self.df_test = standardize_datas(self.df_train_X)
 
 
 class Classifier(machine_learning):

@@ -18,6 +18,7 @@ SUCCESSFULLY_SELECTED = ''
 WINDOW_TITLE_CLASSIFIER = 'classifier'
 WINDOW_TITLE_PREDICTOR = 'predictor'
 LABEL_DISPLAYING_USE_STD = '説明変数の標準化'
+CHK_SELECTING_STD = '標準化を行う'
 PARAM_COMPRESS_METHOD = 'データ圧縮方法選択'
 COMBO_ITEM_METHOD_NOTSELECT = '不使用'
 COMBO_ITEM_SELECT_FEATURES = '特徴量選択'
@@ -132,7 +133,7 @@ LABEL_STYLE_BASIC_MSG = \
     'padding-bottom: 1px' \
     '}'
 
-CHK_SELECTING_STD = \
+CHK_STYLE_SELECTING_STD = \
     'QCheckBox:indicator {' \
     'color: #683400;' \
     'font-size:14px; font-family:HGP創英角ﾎﾟｯﾌﾟ体;' \
