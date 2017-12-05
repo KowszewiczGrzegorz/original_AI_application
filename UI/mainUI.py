@@ -830,4 +830,11 @@ class PredictorUI(machine_learning_UI):
     def _on_clicked_running_button(self):
         """学習ボタン押下時"""
 
-        print("predictor run")
+        """分類オブジェクト作成"""
+        predictor = Predictor()
+
+        """データ設定"""
+        super().set_datas(predictor)
+
+        """データ標準化"""
+        super().standardize_datas(predictor)
