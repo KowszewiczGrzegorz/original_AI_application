@@ -163,6 +163,8 @@ class machine_learning_UI(QDialog):
         self.df_train = None
         self.df_test = None
         self.do_std = False
+        self.compress_method = COMBO_ITEM_METHOD_NOTSELECT
+        self.threshold = 0
 
     def _on_check_std_chkbutton(self, state):
         """データ標準化チェックボックス押下時"""
@@ -176,8 +178,11 @@ class machine_learning_UI(QDialog):
     def _on_select_compress_combo(self, method):
         """データ圧縮方法プルダウン選択時"""
 
+        """選択圧縮方法格納"""
+        self.compress_method = method
+
         """特徴量選択が選ばれた場合は閾値入力ウィジェット有効化"""
-        if COMBO_ITEM_SELECT_FEATURES == method:
+        if COMBO_ITEM_SELECT_FEATURES == self.compress_method:
             self.label_displaying_threshold.setEnabled(True)
             self.ledit_input_threshold.setEnabled(True)
             self.label_displaying_threshold.setStyleSheet(LABEL_STYLE_PARAM_VALID)
@@ -191,7 +196,7 @@ class machine_learning_UI(QDialog):
     def _on_input_threshold(self, value):
         """閾値入力時"""
 
-        pass
+        self.threshold = float(value)
 
     def _on_input_params(self, value):
         """パラメータ入力時"""
@@ -285,6 +290,7 @@ class machine_learning_UI(QDialog):
         self.ledit_input_threshold.setEnabled(False)
         self.ledit_input_threshold.textChanged[str].connect(self._on_input_threshold)
         self.ledit_input_threshold.setStyleSheet(INPUT_STYLE_PARAMS_INVALID)
+        self.ledit_input_threshold.setValidator(QDoubleValidator())
 
         """レイアウト設定"""
         hbox1 = QHBoxLayout()
@@ -443,6 +449,15 @@ class ClassifierUI(machine_learning_UI):
         super().__init__()
         self._initialize()
 
+        self.analysis_method = COMBO_ITEM_PERCEPTRON
+        self.param_penalty = COMBO_ITEM_L1
+        self.param_kernel = COMBO_ITEM_RBF
+        self.param_eta0 = DEFAULT_ETA0
+        self.param_C = DEFAULT_C
+        self.param_gamma = DEFAULT_GAMMA
+        self.param_neighbors = DEFAULT_NEIGHBORS
+        self.param_nestimators = DEFAULT_NESTIMATORS
+
     def _initialize(self):
         """初期化"""
 
@@ -527,6 +542,12 @@ class ClassifierUI(machine_learning_UI):
         self.ledit_param_gamma.setAccessibleName(PARAM_GAMMA)
         self.ledit_param_neighbors.setAccessibleName(PARAM_NEIGHBORS)
         self.ledit_param_nestimators.setAccessibleName(PARAM_NESTIMATORS)
+
+        self.ledit_param_eta0.setText(str(DEFAULT_ETA0))
+        self.ledit_param_C.setText(str(DEFAULT_C))
+        self.ledit_param_gamma.setText(DEFAULT_GAMMA)
+        self.ledit_param_neighbors.setText(str(DEFAULT_NEIGHBORS))
+        self.ledit_param_nestimators.setText(str(DEFAULT_NESTIMATORS))
 
         """ボタンウィジェット定義"""
         button_running_machine_learning = QPushButton(BUTTON_RUNNING_MACHINE_LEARNING, self)
@@ -635,6 +656,16 @@ class PredictorUI(machine_learning_UI):
         super().__init__()
         self._initialize()
 
+        self.param_alpha = DEFAULT_ALPHA
+        self.param_l1ratio = DEFAULT_L1RATIO
+        self.param_maxfeatures = DEFAULT_MAXFEATURES
+        self.param_maxdepth = DEFAULT_MAXDEPTH
+        self.param_nestimators = DEFAULT_NESTIMATORS
+        self.param_batchsize = DEFAULT_BATCHSIZE
+        self.param_nhidden = DEFAULT_NHIDDEN
+        self.param_nunit = DEFAULT_NUNIT
+        self.param_keepdrop = DEFAULT_KEEPDROP
+
     def _initialize(self):
         """初期化"""
 
@@ -725,6 +756,16 @@ class PredictorUI(machine_learning_UI):
         self.ledit_param_nhidden.setAccessibleName(PARAM_NHIDDEN)
         self.ledit_param_nunit.setAccessibleName(PARAM_NUNIT)
         self.ledit_param_keepdroop.setAccessibleName(PARAM_KEEPDROP)
+
+        self.ledit_param_alpha.setText(str(DEFAULT_ALPHA))
+        self.ledit_param_l1ratio.setText(str(DEFAULT_L1RATIO))
+        self.ledit_param_maxfeatures.setText(DEFAULT_MAXFEATURES)
+        self.ledit_param_maxdepth.setText(DEFAULT_MAXDEPTH)
+        self.ledit_param_nestimators.setText(str(DEFAULT_NESTIMATORS))
+        self.ledit_param_batchsize.setText(str(DEFAULT_BATCHSIZE))
+        self.ledit_param_nhidden.setText(str(DEFAULT_NHIDDEN))
+        self.ledit_param_nunit.setText(str(DEFAULT_NUNIT))
+        self.ledit_param_keepdroop.setText(str(DEFAULT_KEEPDROP))
 
         """ボタンウィジェット定義"""
         button_running_machine_learning = QPushButton(BUTTON_RUNNING_MACHINE_LEARNING, self)
