@@ -467,6 +467,14 @@ class machine_learning_UI(QDialog):
 
         return combo
 
+    def _make_label_wiget(self, text, base_wiget, style):
+        """ラベルウィジェット作成"""
+
+        label = QLabel(text, base_wiget)
+        label.setStyleSheet(style)
+
+        return label
+
 
 class ClassifierUI(machine_learning_UI):
     """分類UIクラス"""
@@ -491,23 +499,14 @@ class ClassifierUI(machine_learning_UI):
         self.setWindowTitle(WINDOW_TITLE_CLASSIFIER)
 
         """ラベルウィジェット定義"""
-        self.label_displaying_classifier_method = QLabel(LABEL_DISPLAYING_CLASSIFIER, self)
-        self.label_displaying_param_penalty = QLabel(PARAM_PENALTY, self)
-        self.label_displaying_param_kernel = QLabel(PARAM_KERNEL, self)
-        self.label_displaying_param_eta0 = QLabel(PARAM_ETA0, self)
-        self.label_displaying_param_C = QLabel(PARAM_C, self)
-        self.label_displaying_param_gamma = QLabel(PARAM_GAMMA, self)
-        self.label_displaying_param_neighbors = QLabel(PARAM_NEIGHBORS, self)
-        self.label_displaying_param_nestimators = QLabel(PARAM_NESTIMATORS, self)
-
-        self.label_displaying_classifier_method.setStyleSheet(LABEL_STYLE_BASIC_MSG)
-        self.label_displaying_param_penalty.setStyleSheet(LABEL_STYLE_PARAM_VALID)
-        self.label_displaying_param_kernel.setStyleSheet(LABEL_STYLE_PARAM_INVALID)
-        self.label_displaying_param_eta0.setStyleSheet(LABEL_STYLE_PARAM_VALID)
-        self.label_displaying_param_C.setStyleSheet(LABEL_STYLE_PARAM_INVALID)
-        self.label_displaying_param_gamma.setStyleSheet(LABEL_STYLE_PARAM_INVALID)
-        self.label_displaying_param_neighbors.setStyleSheet(LABEL_STYLE_PARAM_INVALID)
-        self.label_displaying_param_nestimators.setStyleSheet(LABEL_STYLE_PARAM_INVALID)
+        self.label_displaying_classifier_method = super()._make_label_wiget(LABEL_DISPLAYING_CLASSIFIER, self, LABEL_STYLE_BASIC_MSG)
+        self.label_displaying_param_penalty = super()._make_label_wiget(PARAM_PENALTY, self, LABEL_STYLE_PARAM_VALID)
+        self.label_displaying_param_kernel = super()._make_label_wiget(PARAM_KERNEL, self, LABEL_STYLE_PARAM_INVALID)
+        self.label_displaying_param_eta0 = super()._make_label_wiget(PARAM_ETA0, self, LABEL_STYLE_PARAM_VALID)
+        self.label_displaying_param_C = super()._make_label_wiget(PARAM_C, self, LABEL_STYLE_PARAM_INVALID)
+        self.label_displaying_param_gamma = super()._make_label_wiget(PARAM_GAMMA, self, LABEL_STYLE_PARAM_INVALID)
+        self.label_displaying_param_neighbors = super()._make_label_wiget(PARAM_NEIGHBORS, self, LABEL_STYLE_PARAM_INVALID)
+        self.label_displaying_param_nestimators = super()._make_label_wiget(PARAM_NESTIMATORS, self, LABEL_STYLE_PARAM_INVALID)
 
         """コンボボックスウィジェット定義"""
         self.combo_selecting_analysis_method = QComboBox(self)
@@ -656,27 +655,16 @@ class PredictorUI(machine_learning_UI):
         self.setWindowTitle(WINDOW_TITLE_PREDICTOR)
 
         """ラベルウィジェット定義"""
-        self.label_displaying_predictor_method = QLabel(LABEL_DISPLAYING_PREDICTOR, self)
-        self.label_displaying_param_alpha = QLabel(PARAM_ALPHA, self)
-        self.label_displaying_param_l1ratio = QLabel(PARAM_L1RATIO, self)
-        self.label_displaying_param_maxfeatures = QLabel(PARAM_MAXFEATURES, self)
-        self.label_displaying_param_maxdepth = QLabel(PARAM_MAXDEPTH, self)
-        self.label_displaying_param_nestimators = QLabel(PARAM_NESTIMATORS, self)
-        self.label_displaying_param_batchsize = QLabel(PARAM_BATCHSIZE, self)
-        self.label_displaying_param_nhidden = QLabel(PARAM_NHIDDEN, self)
-        self.label_displaying_param_nunit = QLabel(PARAM_NUNIT, self)
-        self.label_displaying_param_keepdrop = QLabel(PARAM_KEEPDROP, self)
-
-        self.label_displaying_predictor_method.setStyleSheet(LABEL_STYLE_BASIC_MSG)
-        self.label_displaying_param_alpha.setStyleSheet(LABEL_STYLE_PARAM_INVALID)
-        self.label_displaying_param_l1ratio.setStyleSheet(LABEL_STYLE_PARAM_INVALID)
-        self.label_displaying_param_maxfeatures.setStyleSheet(LABEL_STYLE_PARAM_INVALID)
-        self.label_displaying_param_maxdepth.setStyleSheet(LABEL_STYLE_PARAM_INVALID)
-        self.label_displaying_param_nestimators.setStyleSheet(LABEL_STYLE_PARAM_INVALID)
-        self.label_displaying_param_batchsize.setStyleSheet(LABEL_STYLE_PARAM_INVALID)
-        self.label_displaying_param_nhidden.setStyleSheet(LABEL_STYLE_PARAM_INVALID)
-        self.label_displaying_param_nunit.setStyleSheet(LABEL_STYLE_PARAM_INVALID)
-        self.label_displaying_param_keepdrop.setStyleSheet(LABEL_STYLE_PARAM_INVALID)
+        self.label_displaying_predictor_method = super()._make_label_wiget(LABEL_DISPLAYING_PREDICTOR, self, LABEL_STYLE_BASIC_MSG)
+        self.label_displaying_param_alpha = super()._make_label_wiget(PARAM_ALPHA, self, LABEL_STYLE_PARAM_INVALID)
+        self.label_displaying_param_l1ratio = super()._make_label_wiget(PARAM_L1RATIO, self, LABEL_STYLE_PARAM_INVALID)
+        self.label_displaying_param_maxfeatures = super()._make_label_wiget(PARAM_MAXFEATURES, self, LABEL_STYLE_PARAM_INVALID)
+        self.label_displaying_param_maxdepth = super()._make_label_wiget(PARAM_MAXDEPTH, self, LABEL_STYLE_PARAM_INVALID)
+        self.label_displaying_param_nestimators = super()._make_label_wiget(PARAM_NESTIMATORS, self, LABEL_STYLE_PARAM_INVALID)
+        self.label_displaying_param_batchsize = super()._make_label_wiget(PARAM_BATCHSIZE, self, LABEL_STYLE_PARAM_INVALID)
+        self.label_displaying_param_nhidden = super()._make_label_wiget(PARAM_NHIDDEN, self, LABEL_STYLE_PARAM_INVALID)
+        self.label_displaying_param_nunit = super()._make_label_wiget(PARAM_NUNIT, self, LABEL_STYLE_PARAM_INVALID)
+        self.label_displaying_param_keepdrop = super()._make_label_wiget(PARAM_KEEPDROP, self, LABEL_STYLE_PARAM_INVALID)
 
         """コンボボックスウィジェット定義"""
         self.combo_selecting_analysis_method = QComboBox(self)
