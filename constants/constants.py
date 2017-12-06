@@ -64,6 +64,8 @@ COMBO_ITEM_BAGGING = 'バギング'
 COMBO_ITEM_ADABOOST = 'アダブースト'
 LABEL_DISPLAYING_RUNNING = '機械学習実行'
 BUTTON_RUNNING_MACHINE_LEARNING = '実行'
+LABEL_DISPLAYING_SAVE = 'パラメータ保存'
+BUTTON_SAVING_PARAMS = '保存'
 
 """数値"""
 SPACE_BETWEEN_PARTS = 15
@@ -269,6 +271,21 @@ INPUT_STYLE_PARAMS_INVALID = \
     '}'
 
 BUTTON_STYLE_RUNNING_MACHINE_LEARNING = \
+    'QPushButton {'\
+    'font-family: Arial; font-weight: bold; font-size:14px;' \
+    'width: 50px;' \
+    'padding: 5px' \
+    '}' \
+    'QPushButton:!pressed {'\
+    'background-color: white; color: #aaff00;' \
+    'border-width: 1px; border-color: #aaff00; border-radius: 2px; border-style: solid;' \
+    '}' \
+    'QPushButton:pressed {'\
+    'background-color: #aaff00; color: white;' \
+    'border-width: 0px; border-radius: 2px;' \
+    '}'
+
+BUTTON_STYLE_SAVE_PARAMS = \
     'QPushButton {'\
     'font-family: Arial; font-weight: bold; font-size:14px;' \
     'width: 50px;' \

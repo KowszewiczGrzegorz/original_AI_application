@@ -234,6 +234,10 @@ class machine_learning_UI(QDialog):
         print('value:', value)
 
         pass
+    
+    def _on_clicked_param_save_button(self):
+        """パラメータ保存ボタン押下時"""
+        print('save')
 
     def _valid_param_wiget_by_method(self, label_wigets, input_wigets, ids):
         """分析手法によってパラメータ系ウィジェットの有効化/無効化"""
@@ -400,6 +404,23 @@ class machine_learning_UI(QDialog):
 
         return vbox
 
+    def _make_save_params_part(self, vbox, button):
+        """パラメータ保存部作成"""
+
+        """ラベルウィジェット定義"""
+        label_displaying_save = QLabel(LABEL_DISPLAYING_SAVE)
+        label_displaying_save.setStyleSheet(LABEL_STYLE_BASIC_MSG)
+
+        """ボタンウィジェット定義"""
+        button.setStyleSheet(BUTTON_STYLE_SAVE_PARAMS)
+
+        """レイアウト設定"""
+        vbox.addSpacing(SPACE_BETWEEN_PARTS)
+        vbox.addWidget(label_displaying_save)
+        vbox.addWidget(button)
+
+        return vbox
+
     def _make_running_machine_learning_part(self, vbox, button):
         """学習・予測実行部作成"""
 
@@ -416,30 +437,6 @@ class machine_learning_UI(QDialog):
         vbox.addWidget(button)
 
         return vbox
-
-    def set_df_train(self, df):
-        """トレーニングデータ設定"""
-
-        self.df_train = df
-
-    def set_df_test(self, df):
-        """テストデータ設定"""
-
-        self.df_test = df
-
-    def set_datas(self, method_object):
-        """分類/予測オブジェクトにデータ設定"""
-
-        method_object.set_df_train(self.df_train)
-        if self.df_test is not None:
-            method_object.set_df_test(self.df_test)
-
-    def standardize_datas(self, method_object):
-        """データの標準化"""
-
-        """標準化チェック時のみ標準化メソッド呼び出し"""
-        if self.do_std:
-            method_object.standardize_datas()
 
     def _make_param_ledit(self, style, name, default):
         """パラメータラインエディット作成"""
@@ -474,6 +471,30 @@ class machine_learning_UI(QDialog):
         label.setStyleSheet(style)
 
         return label
+
+    def set_df_train(self, df):
+        """トレーニングデータ設定"""
+
+        self.df_train = df
+
+    def set_df_test(self, df):
+        """テストデータ設定"""
+
+        self.df_test = df
+
+    def set_datas(self, method_object):
+        """分類/予測オブジェクトにデータ設定"""
+
+        method_object.set_df_train(self.df_train)
+        if self.df_test is not None:
+            method_object.set_df_test(self.df_test)
+
+    def standardize_datas(self, method_object):
+        """データの標準化"""
+
+        """標準化チェック時のみ標準化メソッド呼び出し"""
+        if self.do_std:
+            method_object.standardize_datas()
 
 
 class ClassifierUI(machine_learning_UI):
@@ -532,8 +553,11 @@ class ClassifierUI(machine_learning_UI):
         self.ledit_param_nestimators = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_NESTIMATORS, DEFAULT_NESTIMATORS)
 
         """ボタンウィジェット定義"""
-        button_running_machine_learning = QPushButton(BUTTON_RUNNING_MACHINE_LEARNING, self)
-        button_running_machine_learning.clicked.connect(self._on_clicked_running_button)
+        self.button_running_machine_learning = QPushButton(BUTTON_RUNNING_MACHINE_LEARNING, self)
+        self.button_saving_params = QPushButton(BUTTON_SAVING_PARAMS, self)
+
+        self.button_running_machine_learning.clicked.connect(self._on_clicked_running_button)
+        self.button_saving_params.clicked.connect(super()._on_clicked_param_save_button)
 
         """共通部分作成"""
         vbox = super()._make_std_and_compress_part()
@@ -560,8 +584,8 @@ class ClassifierUI(machine_learning_UI):
         vbox.addLayout(grid)
         
         vbox = super()._make_bag_and_ada_part(vbox)
-
-        vbox = super()._make_running_machine_learning_part(vbox, button_running_machine_learning)
+        vbox = super()._make_save_params_part(vbox, self.button_saving_params)
+        vbox = super()._make_running_machine_learning_part(vbox, self.button_running_machine_learning)
 
         self.setLayout(vbox)
 
@@ -689,8 +713,11 @@ class PredictorUI(machine_learning_UI):
         self.ledit_param_keepdroop = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_KEEPDROP, DEFAULT_KEEPDROP)
 
         """ボタンウィジェット定義"""
-        button_running_machine_learning = QPushButton(BUTTON_RUNNING_MACHINE_LEARNING, self)
-        button_running_machine_learning.clicked.connect(self._on_clicked_running_button)
+        self.button_running_machine_learning = QPushButton(BUTTON_RUNNING_MACHINE_LEARNING, self)
+        self.button_saving_params = QPushButton(BUTTON_SAVING_PARAMS, self)
+
+        self.button_running_machine_learning.clicked.connect(self._on_clicked_running_button)
+        self.button_saving_params.clicked.connect(super()._on_clicked_param_save_button)
 
         """共通部分作成"""
         vbox = super()._make_std_and_compress_part()
@@ -721,8 +748,8 @@ class PredictorUI(machine_learning_UI):
         vbox.addLayout(grid)
 
         vbox = super()._make_bag_and_ada_part(vbox)
-
-        vbox = super()._make_running_machine_learning_part(vbox, button_running_machine_learning)
+        vbox = super()._make_save_params_part(vbox, self._on_clicked_param_save_button())
+        vbox = super()._make_running_machine_learning_part(vbox, self.button_running_machine_learning)
 
         self.setLayout(vbox)
 
