@@ -441,6 +441,32 @@ class machine_learning_UI(QDialog):
         if self.do_std:
             method_object.standardize_datas()
 
+    def _make_param_ledit(self, style, name, default):
+        """パラメータラインエディット作成"""
+
+        ledit = QLineEdit(self)
+        ledit.setStyleSheet(style)
+        ledit.setEnabled(True)
+        ledit.textChanged[str].connect(self._on_input_params)
+        ledit.setAccessibleName(name)
+        ledit.setText(str(default))
+
+        return ledit
+
+    def _make_param_combo(self, item_list, style, name):
+        """パラメータコンボボックス作成"""
+
+        combo = QComboBox(self)
+        for item in item_list:
+            combo.addItem(item)
+        combo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        combo.setStyleSheet(style)
+        combo.activated[str].connect(self._on_input_params)
+        combo.setEnabled(True)
+        combo.setAccessibleName(name)
+
+        return combo
+
 
 class ClassifierUI(machine_learning_UI):
     """分類UIクラス"""
@@ -494,60 +520,17 @@ class ClassifierUI(machine_learning_UI):
         self.combo_selecting_analysis_method.setStyleSheet(COMBO_STYLE_SELECT_CLASSIFIER)
         self.combo_selecting_analysis_method.activated[str].connect(self._on_select_analysis_method)
 
-        self.combo_selecting_penalty = QComboBox(self)
-        self.combo_selecting_penalty.addItem(COMBO_ITEM_L1)
-        self.combo_selecting_penalty.addItem(COMBO_ITEM_L2)
-        self.combo_selecting_penalty.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.combo_selecting_penalty.setStyleSheet(INPUT_STYLE_PARAMS_VALID)
-        self.combo_selecting_penalty.activated[str].connect(super()._on_input_params)
-        self.combo_selecting_penalty.setEnabled(True)
-        self.combo_selecting_penalty.setAccessibleName(PARAM_PENALTY)
-
-        self.combo_selecting_kernel = QComboBox(self)
-        self.combo_selecting_kernel.addItem(COMBO_ITEM_RBF)
-        self.combo_selecting_kernel.addItem(COMBO_ITEM_LINEAR)
-        self.combo_selecting_kernel.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.combo_selecting_kernel.setStyleSheet(INPUT_STYLE_PARAMS_INVALID)
-        self.combo_selecting_kernel.activated[str].connect(super()._on_input_params)
-        self.combo_selecting_kernel.setEnabled(False)
-        self.combo_selecting_kernel.setAccessibleName(PARAM_KERNEL)
+        self.combo_selecting_penalty = super()._make_param_combo([COMBO_ITEM_L1, COMBO_ITEM_L2],
+                                                                 INPUT_STYLE_PARAMS_VALID, PARAM_PENALTY)
+        self.combo_selecting_kernel = super()._make_param_combo([COMBO_ITEM_RBF, COMBO_ITEM_LINEAR],
+                                                                INPUT_STYLE_PARAMS_INVALID, PARAM_KERNEL)
 
         """ラインエディットウィジェット定義"""
-        self.ledit_param_eta0 = QLineEdit(self)
-        self.ledit_param_C = QLineEdit(self)
-        self.ledit_param_gamma = QLineEdit(self)
-        self.ledit_param_neighbors = QLineEdit(self)
-        self.ledit_param_nestimators = QLineEdit(self)
-
-        self.ledit_param_eta0.setStyleSheet(INPUT_STYLE_PARAMS_VALID)
-        self.ledit_param_C.setStyleSheet(INPUT_STYLE_PARAMS_INVALID)
-        self.ledit_param_gamma.setStyleSheet(INPUT_STYLE_PARAMS_INVALID)
-        self.ledit_param_neighbors.setStyleSheet(INPUT_STYLE_PARAMS_INVALID)
-        self.ledit_param_nestimators.setStyleSheet(INPUT_STYLE_PARAMS_INVALID)
-
-        self.ledit_param_eta0.setEnabled(True)
-        self.ledit_param_C.setEnabled(False)
-        self.ledit_param_gamma.setEnabled(False)
-        self.ledit_param_neighbors.setEnabled(False)
-        self.ledit_param_nestimators.setEnabled(False)
-
-        self.ledit_param_eta0.textChanged[str].connect(super()._on_input_params)
-        self.ledit_param_C.textChanged[str].connect(super()._on_input_params)
-        self.ledit_param_gamma.textChanged[str].connect(super()._on_input_params)
-        self.ledit_param_neighbors.textChanged[str].connect(super()._on_input_params)
-        self.ledit_param_nestimators.textChanged[str].connect(super()._on_input_params)
-
-        self.ledit_param_eta0.setAccessibleName(PARAM_ETA0)
-        self.ledit_param_C.setAccessibleName(PARAM_C)
-        self.ledit_param_gamma.setAccessibleName(PARAM_GAMMA)
-        self.ledit_param_neighbors.setAccessibleName(PARAM_NEIGHBORS)
-        self.ledit_param_nestimators.setAccessibleName(PARAM_NESTIMATORS)
-
-        self.ledit_param_eta0.setText(str(DEFAULT_ETA0))
-        self.ledit_param_C.setText(str(DEFAULT_C))
-        self.ledit_param_gamma.setText(DEFAULT_GAMMA)
-        self.ledit_param_neighbors.setText(str(DEFAULT_NEIGHBORS))
-        self.ledit_param_nestimators.setText(str(DEFAULT_NESTIMATORS))
+        self.ledit_param_eta0 = super()._make_param_ledit(INPUT_STYLE_PARAMS_VALID, PARAM_ETA0, DEFAULT_ETA0)
+        self.ledit_param_C = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_C, DEFAULT_C)
+        self.ledit_param_gamma = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_GAMMA, DEFAULT_GAMMA)
+        self.ledit_param_neighbors = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_NEIGHBORS, DEFAULT_NEIGHBORS)
+        self.ledit_param_nestimators = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_NESTIMATORS, DEFAULT_NESTIMATORS)
 
         """ボタンウィジェット定義"""
         button_running_machine_learning = QPushButton(BUTTON_RUNNING_MACHINE_LEARNING, self)
@@ -566,12 +549,12 @@ class ClassifierUI(machine_learning_UI):
         grid.addWidget(self.ledit_param_eta0, 1, 1)
         grid.addWidget(self.label_displaying_param_C, 1, 2)
         grid.addWidget(self.ledit_param_C, 1, 3)
-        grid.addWidget(self.label_displaying_param_gamma, 1, 4)
-        grid.addWidget(self.ledit_param_gamma, 1, 5)
-        grid.addWidget(self.label_displaying_param_neighbors, 2, 0)
-        grid.addWidget(self.ledit_param_neighbors, 2, 1)
-        grid.addWidget(self.label_displaying_param_nestimators, 2,2)
-        grid.addWidget(self.ledit_param_nestimators, 2, 3)
+        grid.addWidget(self.label_displaying_param_gamma, 2, 0)
+        grid.addWidget(self.ledit_param_gamma, 2, 1)
+        grid.addWidget(self.label_displaying_param_neighbors, 2, 2)
+        grid.addWidget(self.ledit_param_neighbors, 2, 3)
+        grid.addWidget(self.label_displaying_param_nestimators, 3, 0)
+        grid.addWidget(self.ledit_param_nestimators, 3, 1)
 
         vbox.addWidget(self.label_displaying_classifier_method)
         vbox.addWidget(self.combo_selecting_analysis_method)
@@ -707,65 +690,15 @@ class PredictorUI(machine_learning_UI):
         self.combo_selecting_analysis_method.activated[str].connect(self._on_select_analysis_method)
 
         """ラインエディットウィジェット定義"""
-        self.ledit_param_alpha = QLineEdit(self)
-        self.ledit_param_l1ratio = QLineEdit(self)
-        self.ledit_param_maxfeatures = QLineEdit(self)
-        self.ledit_param_maxdepth = QLineEdit(self)
-        self.ledit_param_nestimators = QLineEdit(self)
-        self.ledit_param_batchsize = QLineEdit(self)
-        self.ledit_param_nhidden = QLineEdit(self)
-        self.ledit_param_nunit = QLineEdit(self)
-        self.ledit_param_keepdroop = QLineEdit(self)
-
-        self.ledit_param_alpha.setStyleSheet(INPUT_STYLE_PARAMS_INVALID)
-        self.ledit_param_l1ratio.setStyleSheet(INPUT_STYLE_PARAMS_INVALID)
-        self.ledit_param_maxfeatures.setStyleSheet(INPUT_STYLE_PARAMS_INVALID)
-        self.ledit_param_maxdepth.setStyleSheet(INPUT_STYLE_PARAMS_INVALID)
-        self.ledit_param_nestimators.setStyleSheet(INPUT_STYLE_PARAMS_INVALID)
-        self.ledit_param_batchsize.setStyleSheet(INPUT_STYLE_PARAMS_INVALID)
-        self.ledit_param_nhidden.setStyleSheet(INPUT_STYLE_PARAMS_INVALID)
-        self.ledit_param_nunit.setStyleSheet(INPUT_STYLE_PARAMS_INVALID)
-        self.ledit_param_keepdroop.setStyleSheet(INPUT_STYLE_PARAMS_INVALID)
-
-        self.ledit_param_alpha.setEnabled(False)
-        self.ledit_param_l1ratio.setEnabled(False)
-        self.ledit_param_maxfeatures.setEnabled(False)
-        self.ledit_param_maxdepth.setEnabled(False)
-        self.ledit_param_nestimators.setEnabled(False)
-        self.ledit_param_batchsize.setEnabled(False)
-        self.ledit_param_nhidden.setEnabled(False)
-        self.ledit_param_nunit.setEnabled(False)
-        self.ledit_param_keepdroop.setEnabled(False)
-
-        self.ledit_param_alpha.textChanged[str].connect(super()._on_input_params)
-        self.ledit_param_l1ratio.textChanged[str].connect(super()._on_input_params)
-        self.ledit_param_maxfeatures.textChanged[str].connect(super()._on_input_params)
-        self.ledit_param_maxdepth.textChanged[str].connect(super()._on_input_params)
-        self.ledit_param_nestimators.textChanged[str].connect(super()._on_input_params)
-        self.ledit_param_batchsize.textChanged[str].connect(super()._on_input_params)
-        self.ledit_param_nhidden.textChanged[str].connect(super()._on_input_params)
-        self.ledit_param_nunit.textChanged[str].connect(super()._on_input_params)
-        self.ledit_param_keepdroop.textChanged[str].connect(super()._on_input_params)
-
-        self.ledit_param_alpha.setAccessibleName(PARAM_ALPHA)
-        self.ledit_param_l1ratio.setAccessibleName(PARAM_L1RATIO)
-        self.ledit_param_maxfeatures.setAccessibleName(PARAM_MAXFEATURES)
-        self.ledit_param_maxdepth.setAccessibleName(PARAM_MAXDEPTH)
-        self.ledit_param_nestimators.setAccessibleName(PARAM_NESTIMATORS)
-        self.ledit_param_batchsize.setAccessibleName(PARAM_BATCHSIZE)
-        self.ledit_param_nhidden.setAccessibleName(PARAM_NHIDDEN)
-        self.ledit_param_nunit.setAccessibleName(PARAM_NUNIT)
-        self.ledit_param_keepdroop.setAccessibleName(PARAM_KEEPDROP)
-
-        self.ledit_param_alpha.setText(str(DEFAULT_ALPHA))
-        self.ledit_param_l1ratio.setText(str(DEFAULT_L1RATIO))
-        self.ledit_param_maxfeatures.setText(DEFAULT_MAXFEATURES)
-        self.ledit_param_maxdepth.setText(DEFAULT_MAXDEPTH)
-        self.ledit_param_nestimators.setText(str(DEFAULT_NESTIMATORS))
-        self.ledit_param_batchsize.setText(str(DEFAULT_BATCHSIZE))
-        self.ledit_param_nhidden.setText(str(DEFAULT_NHIDDEN))
-        self.ledit_param_nunit.setText(str(DEFAULT_NUNIT))
-        self.ledit_param_keepdroop.setText(str(DEFAULT_KEEPDROP))
+        self.ledit_param_alpha = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_ALPHA, DEFAULT_ALPHA)
+        self.ledit_param_l1ratio = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_L1RATIO, DEFAULT_L1RATIO)
+        self.ledit_param_maxfeatures = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_MAXFEATURES, DEFAULT_MAXFEATURES)
+        self.ledit_param_maxdepth = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_MAXDEPTH, DEFAULT_MAXDEPTH)
+        self.ledit_param_nestimators = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_NESTIMATORS, DEFAULT_NESTIMATORS)
+        self.ledit_param_batchsize = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_BATCHSIZE, DEFAULT_BATCHSIZE)
+        self.ledit_param_nhidden = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_BATCHSIZE, DEFAULT_BATCHSIZE)
+        self.ledit_param_nunit = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_NUNIT, DEFAULT_NUNIT)
+        self.ledit_param_keepdroop = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_KEEPDROP, DEFAULT_KEEPDROP)
 
         """ボタンウィジェット定義"""
         button_running_machine_learning = QPushButton(BUTTON_RUNNING_MACHINE_LEARNING, self)
@@ -780,20 +713,20 @@ class PredictorUI(machine_learning_UI):
         grid.addWidget(self.ledit_param_alpha, 0, 1)
         grid.addWidget(self.label_displaying_param_l1ratio, 0, 2)
         grid.addWidget(self.ledit_param_l1ratio, 0, 3)
-        grid.addWidget(self.label_displaying_param_maxfeatures, 0, 4)
-        grid.addWidget(self.ledit_param_maxfeatures, 0, 5)
-        grid.addWidget(self.label_displaying_param_maxdepth, 1, 0)
-        grid.addWidget(self.ledit_param_maxdepth, 1, 1)
-        grid.addWidget(self.label_displaying_param_nestimators, 1, 2)
-        grid.addWidget(self.ledit_param_nestimators, 1, 3)
-        grid.addWidget(self.label_displaying_param_batchsize, 1, 4)
-        grid.addWidget(self.ledit_param_batchsize, 1, 5)
-        grid.addWidget(self.label_displaying_param_nhidden, 2, 0)
-        grid.addWidget(self.ledit_param_nhidden, 2, 1)
-        grid.addWidget(self.label_displaying_param_nunit, 2, 2)
-        grid.addWidget(self.ledit_param_nunit, 2, 3)
-        grid.addWidget(self.label_displaying_param_keepdrop, 2, 4)
-        grid.addWidget(self.ledit_param_keepdroop, 2, 5)
+        grid.addWidget(self.label_displaying_param_maxfeatures, 1, 0)
+        grid.addWidget(self.ledit_param_maxfeatures, 1, 1)
+        grid.addWidget(self.label_displaying_param_maxdepth, 1, 2)
+        grid.addWidget(self.ledit_param_maxdepth, 1, 3)
+        grid.addWidget(self.label_displaying_param_nestimators, 2, 0)
+        grid.addWidget(self.ledit_param_nestimators, 2, 1)
+        grid.addWidget(self.label_displaying_param_batchsize, 2, 2)
+        grid.addWidget(self.ledit_param_batchsize, 2, 3)
+        grid.addWidget(self.label_displaying_param_nhidden, 3, 0)
+        grid.addWidget(self.ledit_param_nhidden, 3, 1)
+        grid.addWidget(self.label_displaying_param_nunit, 3, 2)
+        grid.addWidget(self.ledit_param_nunit, 3, 3)
+        grid.addWidget(self.label_displaying_param_keepdrop, 4, 0)
+        grid.addWidget(self.ledit_param_keepdroop, 4, 1)
 
         vbox.addWidget(self.label_displaying_predictor_method)
         vbox.addWidget(self.combo_selecting_analysis_method)

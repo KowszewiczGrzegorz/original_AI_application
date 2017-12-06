@@ -231,7 +231,7 @@ INPUT_STYLE_PARAMS_VALID = \
     'color: gray;' \
     'font-weight: bold;' \
     'border-width: 1px; border-color: gray; border-radius: 2px; border-style: solid;' \
-    'width: 69px;' \
+    'width: 100px;' \
     'padding-left:3px; padding-right:-14px; padding-top:2px; padding-bottom: 2px;' \
     '}' \
     'QComboBox:drop-down {'\
@@ -244,6 +244,7 @@ INPUT_STYLE_PARAMS_VALID = \
     'QLineEdit {' \
     'color: #4a8d00; background-color: #f0fff6;' \
     'border-width: 0px; border-radius: 2px;' \
+    'width: 100px' \
     '}'
 
 INPUT_STYLE_PARAMS_INVALID = \
@@ -251,7 +252,7 @@ INPUT_STYLE_PARAMS_INVALID = \
     'color: white;' \
     'font-weight: bold;' \
     'border-width: 1px; border-color: gray; border-radius: 2px; border-style: solid;' \
-    'width: 69px;' \
+    'width: 100px;' \
     'padding-left:3px; padding-right:-14px; padding-top:2px; padding-bottom: 2px;' \
     '}' \
     'QComboBox:drop-down {'\
@@ -264,6 +265,7 @@ INPUT_STYLE_PARAMS_INVALID = \
     'QLineEdit {' \
     'color: #f0fff6; background-color: #f0fff6;' \
     'border-width: 0px; border-radius: 2px;' \
+    'width: 100px' \
     '}'
 
 BUTTON_STYLE_RUNNING_MACHINE_LEARNING = \
