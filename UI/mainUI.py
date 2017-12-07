@@ -748,7 +748,7 @@ class PredictorUI(machine_learning_UI):
         vbox.addLayout(grid)
 
         vbox = super()._make_bag_and_ada_part(vbox)
-        vbox = super()._make_save_params_part(vbox, self._on_clicked_param_save_button())
+        vbox = super()._make_save_params_part(vbox, self.button_saving_params)
         vbox = super()._make_running_machine_learning_part(vbox, self.button_running_machine_learning)
 
         self.setLayout(vbox)
