@@ -65,7 +65,21 @@ COMBO_ITEM_ADABOOST = 'アダブースト'
 LABEL_DISPLAYING_RUNNING = '機械学習実行'
 BUTTON_RUNNING_MACHINE_LEARNING = '実行'
 LABEL_DISPLAYING_SAVE = 'パラメータ保存'
+LABEL_DISPLAYING_FILENAME = '書き出しファイル名'
 BUTTON_SAVING_PARAMS = '保存'
+SAVE_BUTTON_CLASSIFIER = '分類'
+SAVE_BUTTON_PREDICTOR = '予測'
+PARAM_STD = '標準化'
+PARAM_COMPRESS = '圧縮方法'
+PARAM_THRESHOLD = '閾値'
+PARAM_ANALYSIS = '分析手法'
+PARAM_BAGADA = 'バギング/アダブースト設定'
+PARAM_BA_NESTIMATOR = 'BagAda/n_estimator'
+PARAM_BA_MAXSAMPLES = 'BagAda/max_samples'
+PARAM_BA_MAX_FEATURES = 'BagAda/max_features'
+PARAM_BA_LEARNINGRATE = 'BagAda/learning_rate'
+PARAM_CLASSFIER_OR_PREDICTOR = '分類か予測か'
+PARAM_FILENAME = 'ファイル名'
 
 """数値"""
 SPACE_BETWEEN_PARTS = 15
@@ -87,6 +101,10 @@ DEFAULT_BATCHSIZE = 100
 DEFAULT_NHIDDEN = 1
 DEFAULT_NUNIT = 5
 DEFAULT_KEEPDROP = 1.0
+DEFAULT_BA_NESTIMATOR = 10
+DEFAULT_BA_MAXSAMPLES = 1.0
+DEFAULT_BA_MAXFEATURES = 1.0
+DEFAULT_BA_LEARNINGRATE = 1
 
 """パス"""
 APPLICATION_ICON_PATH = '../UI/images/icon_ai.png'
@@ -298,4 +316,10 @@ BUTTON_STYLE_SAVE_PARAMS = \
     'QPushButton:pressed {'\
     'background-color: #aaff00; color: white;' \
     'border-width: 0px; border-radius: 2px;' \
+    '}'
+
+LABEL_STYLE_SAVE_FILE = \
+    'QLabel {'\
+    'background-color: white; color: #4a8d00;' \
+    'font-family: Arial; font-size:14px;' \
     '}'

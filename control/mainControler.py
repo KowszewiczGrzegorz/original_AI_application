@@ -1,4 +1,5 @@
-from lib import *
+import os
+import pandas as pd
 
 
 class MainControler:
@@ -36,6 +37,34 @@ class MainControler:
         """テストデータの削除"""
         self.df_test = None
 
+    def export_params(self, file_name, param_dict):
+        """パラメータなど書き出し"""
+
+        """同名ファイルが存在している場合は書き出し中止"""
+        if os.path.exists((str(file_name) + '.txt')):
+            print('既に存在しています')
+            return
+
+        """ファイル名が無い場合は連番書き出し"""
+        if '' == file_name:
+            file_name = 1
+            is_ok = False
+            while(not is_ok):
+                if os.path.exists((str(file_name) + '.txt')):
+                    file_name += 1
+                else:
+                    is_ok = True
+
+        """書き出し"""
+        file_name = str(file_name) + '.txt'
+        f = open(file_name, 'w')
+
+        for key, value in param_dict.items():
+            o_str = str(key) + ' ' + str(value) + '\n'
+            f.write(o_str)
+
+        f.close()
+
 
 class machine_learning:
     """機械学習処理のベースクラス"""
@@ -55,8 +84,17 @@ class machine_learning:
     def standardize_datas(self):
         """データ標準化"""
 
-        self.df_train_X = standardize_datas(self.df_train_X)
-        self.df_test = standardize_datas(self.df_train_X)
+        self.df_train_X = self.standardize(self.df_train_X)
+        self.df_test = self.standardize(self.df_train_X)
+
+    def standardize(X):
+        """変数の標準化"""
+
+        """もらったデータの標準化(平均=0, 標準偏差=1)を行う"""
+        sc = StandardScaler()
+        return_X = pd.DataFrame(sc.fit_transform(X))
+
+        return return_X
 
 
 class Classifier(machine_learning):
