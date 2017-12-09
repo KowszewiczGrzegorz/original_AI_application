@@ -89,6 +89,7 @@ class machine_learning:
         self.df_train_Y = None
         self.test_ID = None
         self.df_test = None
+        self.params = {}
 
     def set_df_train(self, df):
         """トレーニングデータ設定"""
@@ -103,7 +104,10 @@ class machine_learning:
         self.df_test = df.iloc[:, 1:]
 
     def set_params(self, params):
-        pass
+        """パラメータ設定"""
+
+        for key, value in params.items():
+            self.params[key] = value
 
     def standardize_datas(self):
         """データ標準化"""
@@ -118,7 +122,7 @@ class machine_learning:
 
         if COMBO_ITEM_SELECT_FEATURES == method:
             # 特徴量選択によりデータ圧縮
-            self.df_train_X = pd.DataFrame(get_import_features(threshold, self.df_train_X, self.df_train_Y))
+            self.df_train_X = pd.DataFrame(self.get_import_features(threshold, self.df_train_X, self.df_train_Y))
 
         elif COMBO_ITEM_PCA == method:
             # PCAによりデータ圧縮
@@ -135,27 +139,26 @@ class machine_learning:
             kpca = KernelPCA(kernel='rbf')
             self.df_train_X = pd.DataFrame(kpca.fit_transform(self.df_train_X))
 
-        print('テスト出力', os.path.basename(__file__), sys._getframe().f_code.co_name)
-        print(self.df_train_X.head())
+        # print(self.df_train_X.head())
 
-def get_import_features(threshold, X, y):
-    """重要な特徴量取得"""
+    def get_import_features(self, threshold, X, y):
+        """重要な特徴量取得"""
 
-    labels = X.columns
-    forest = RandomForestClassifier(n_estimators=100, random_state=0, n_jobs=-1)
-    forest.fit(X, y)
-    importances = forest.feature_importances_   # 特徴量の重要度を抽出
-    indices = np.argsort(importances)[::-1]     # 重要度の降順で特徴量のインデックスを抽出
-    for f in range(X.shape[1]):
-        print("%2d) %-*s %f" % (f + 1, 30,
-                                labels[indices[f]],
-                                importances[indices[f]]))
-    print()
+        labels = X.columns
+        forest = RandomForestClassifier(n_estimators=100, random_state=0, n_jobs=-1)
+        forest.fit(X, y)
+        importances = forest.feature_importances_   # 特徴量の重要度を抽出
+        indices = np.argsort(importances)[::-1]     # 重要度の降順で特徴量のインデックスを抽出
+        for f in range(X.shape[1]):
+            print("%2d) %-*s %f" % (f + 1, 30,
+                                    labels[indices[f]],
+                                    importances[indices[f]]))
+        print()
 
-    sfm = SelectFromModel(forest, threshold=threshold, prefit=True)
-    return_X = sfm.transform(X)
+        sfm = SelectFromModel(forest, threshold=threshold, prefit=True)
+        return_X = sfm.transform(X)
 
-    return return_X
+        return return_X
 
 class Classifier(machine_learning):
     """分類に特化した機械学習処理クラス"""
