@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import codecs
 
 
 class MainControler:
@@ -57,7 +58,7 @@ class MainControler:
 
         """書き出し"""
         file_name = str(file_name) + '.txt'
-        f = open(file_name, 'w')
+        f = codecs.open(file_name, 'w', 'utf-8')
 
         for key, value in param_dict.items():
             o_str = str(key) + ' ' + str(value) + '\n'

@@ -187,6 +187,9 @@ class machine_learning_UI(QDialog):
         self.classifier_param_dict[PARAM_GAMMA] = self.param_gamma
         self.classifier_param_dict[PARAM_NEIGHBORS] = self.param_neighbors
         self.classifier_param_dict[PARAM_NESTIMATORS] = self.param_nestimators
+        self.classifier_param_dict_for_export = OrderedDict()
+        self.classifier_param_dict_for_export[PARAM_PENALTY] = self.param_penalty
+        self.classifier_param_dict_for_export[PARAM_ETA0] = self.param_eta0
 
         self.param_alpha = DEFAULT_ALPHA
         self.param_l1ratio = DEFAULT_L1RATIO
@@ -207,6 +210,7 @@ class machine_learning_UI(QDialog):
         self.predictor_param_dict[PARAM_NHIDDEN] = self.param_nhidden
         self.predictor_param_dict[PARAM_NUNIT] = self.param_nunit
         self.predictor_param_dict[PARAM_KEEPDROP] = self.param_keepdrop
+        self.predictor_param_dict_for_export = OrderedDict()
 
         self.param_bagada_nestimator = DEFAULT_BA_NESTIMATOR
         self.param_bagada_maxsamples = DEFAULT_BA_MAXSAMPLES
@@ -217,6 +221,7 @@ class machine_learning_UI(QDialog):
         self.bagada_param_dict[PARAM_BA_MAXSAMPLES] = self.param_bagada_maxsamples
         self.bagada_param_dict[PARAM_BA_MAX_FEATURES] = self.param_bagada_maxfeatures
         self.bagada_param_dict[PARAM_BA_LEARNINGRATE] = self.param_bagada_learningrate
+        self.bagada_param_dict_for_export = OrderedDict()
 
     def _on_check_std_chkbutton(self, state):
         """データ標準化チェックボックス押下時"""
@@ -253,10 +258,71 @@ class machine_learning_UI(QDialog):
     def _on_input_params(self, value):
         """パラメータ入力時"""
 
-        """送り主特定"""
+        """送り主特定し然るべきパラメータ更新"""
         sender_name = self.sender().accessibleName()
-        print('name:', sender_name)
-        print('value:', value)
+
+        if sender_name == PARAM_PENALTY:
+            self.param_penalty = value
+            self.classifier_param_dict_for_export[PARAM_PENALTY] = value
+        elif sender_name == PARAM_KERNEL:
+            self.param_kernel = value
+            self.classifier_param_dict_for_export[PARAM_KERNEL] = value
+        elif sender_name == PARAM_ETA0:
+            self.param_eta0 = value
+            self.classifier_param_dict_for_export[PARAM_ETA0] = value
+        elif sender_name == PARAM_C:
+            self.param_C = value
+            self.classifier_param_dict_for_export[PARAM_C] = value
+        elif sender_name == PARAM_GAMMA:
+            self.param_gamma = value
+            self.classifier_param_dict_for_export[PARAM_GAMMA] = value
+        elif sender_name == PARAM_NEIGHBORS:
+            self.param_neighbors = value
+            self.classifier_param_dict_for_export[PARAM_NEIGHBORS] = value
+        elif sender_name == PARAM_NESTIMATORS:
+            self.param_nestimators = value
+            self.classifier_param_dict_for_export[PARAM_NESTIMATORS] = value
+
+        elif sender_name == PARAM_ALPHA:
+            self.param_alpha = value
+            self.predictor_param_dict_for_export[PARAM_ALPHA] = value
+        elif sender_name == PARAM_L1RATIO:
+            self.param_l1ratio = value
+            self.predictor_param_dict_for_export[PARAM_L1RATIO] = value
+        elif sender_name == PARAM_MAXDEPTH:
+            self.param_maxdepth = value
+            self.predictor_param_dict_for_export[PARAM_MAXDEPTH] = value
+        elif sender_name == PARAM_MAXFEATURES:
+            self.param_maxfeatures = value
+            self.predictor_param_dict_for_export[PARAM_MAXFEATURES] = value
+        elif sender_name == PARAM_NESTIMATORS:
+            self.param_nestimators = value
+            self.predictor_param_dict_for_export[PARAM_NESTIMATORS] = value
+        elif sender_name == PARAM_BATCHSIZE:
+            self.param_batchsize = value
+            self.predictor_param_dict_for_export[PARAM_BATCHSIZE] = value
+        elif sender_name == PARAM_NHIDDEN:
+            self.param_nhidden = value
+            self.predictor_param_dict_for_export[PARAM_NHIDDEN] = value
+        elif sender_name == PARAM_NUNIT:
+            self.param_nunit = value
+            self.predictor_param_dict_for_export[PARAM_NUNIT] = value
+        elif sender_name == PARAM_KEEPDROP:
+            self.param_keepdrop = value
+            self.predictor_param_dict_for_export[PARAM_KEEPDROP] = value
+
+        elif sender_name == PARAM_BA_NESTIMATOR:
+            self.param_bagada_nestimator = value
+            self.bagada_param_dict_for_export[PARAM_BA_NESTIMATOR] = value
+        elif sender_name == PARAM_BA_MAXSAMPLES:
+            self.param_bagada_maxsamples = value
+            self.bagada_param_dict_for_export[PARAM_BA_MAXSAMPLES] = value
+        elif sender_name == PARAM_BA_MAX_FEATURES:
+            self.param_bagada_maxfeatures = value
+            self.bagada_param_dict_for_export[PARAM_BA_MAX_FEATURES] = value
+        elif sender_name == PARAM_BA_LEARNINGRATE:
+            self.param_bagada_learningrate = value
+            self.bagada_param_dict_for_export[PARAM_BA_LEARNINGRATE] = value
 
     def _on_select_bagada_combo(self, method):
         """バギング/アダブースト設定コンボ選択時"""
@@ -276,8 +342,12 @@ class machine_learning_UI(QDialog):
             valid_ids[self.bagada_param_dictionary[PARAM_LEARNINGRATE]] = True
 
         self._valid_param_wiget_by_method(self.bagada_param_label_wigets,
-                                         self.bagada_param_input_wigets,
-                                         valid_ids)
+                                          self.bagada_param_input_wigets,
+                                          valid_ids)
+
+        """パラメータ書き出し用辞書作成"""
+        self._make_export_param_dict(valid_ids, self.bagada_param_dict.keys(),
+                                     self.bagada_param_dict.values(), self.bagada_param_dict_for_export)
 
     def _on_input_bag_ada(self, value):
         """バギング/アダブーストパラメータ入力時"""
@@ -306,11 +376,11 @@ class machine_learning_UI(QDialog):
             export_dict[PARAM_THRESHOLD] = self.threshold
         export_dict[PARAM_ANALYSIS] = self.analysis_method
         if SAVE_BUTTON_CLASSIFIER == sender_name:
-            export_dict = self._make_dict(export_dict, self.classifier_param_dict)
+            export_dict = self._make_dict(export_dict, self.classifier_param_dict_for_export)
         elif SAVE_BUTTON_PREDICTOR == sender_name:
-            export_dict = self._make_dict(export_dict, self.predictor_param_dict)
+            export_dict = self._make_dict(export_dict, self.predictor_param_dict_for_export)
         export_dict[PARAM_BAGADA] = self.bagada_method
-        export_dict = self._make_dict(export_dict, self.bagada_param_dict)
+        export_dict = self._make_dict(export_dict, self.bagada_param_dict_for_export)
 
         self.main_controler.export_params(self.export_file_name, export_dict)
 
@@ -421,13 +491,13 @@ class machine_learning_UI(QDialog):
         combo_selecting_bagging_or_adaboost.addItem(COMBO_ITEM_ADABOOST)
         combo_selecting_bagging_or_adaboost.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         combo_selecting_bagging_or_adaboost.setStyleSheet(COMBO_STYLE_SELECT_COMPRESS)
-        combo_selecting_bagging_or_adaboost.activated[str].connect(self._on_select_bagada_combo)
+        combo_selecting_bagging_or_adaboost.currentIndexChanged[str].connect(self._on_select_bagada_combo)
 
         """ラインエディットウィジェット定義"""
-        self.ledit_input_bagada_nestimator = self._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_NESTIMATORS, DEFAULT_BA_NESTIMATOR)
-        self.ledit_input_bagada_maxsamples = self._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_MAXSAMPLES, DEFAULT_BA_MAXSAMPLES)
-        self.ledit_input_bagada_maxfeatures = self._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_MAXFEATURES, DEFAULT_BA_MAXFEATURES)
-        self.ledit_input_bagada_learningrate = self._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_LEARNINGRATE, DEFAULT_BA_LEARNINGRATE)
+        self.ledit_input_bagada_nestimator = self._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_BA_NESTIMATOR, DEFAULT_BA_NESTIMATOR, True)
+        self.ledit_input_bagada_maxsamples = self._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_BA_MAXSAMPLES, DEFAULT_BA_MAXSAMPLES, True)
+        self.ledit_input_bagada_maxfeatures = self._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_BA_MAX_FEATURES, DEFAULT_BA_MAXFEATURES, True)
+        self.ledit_input_bagada_learningrate = self._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_BA_LEARNINGRATE, DEFAULT_BA_LEARNINGRATE, True)
 
         """レイアウト設定"""
         vbox.addSpacing(SPACE_BETWEEN_PARTS)
@@ -461,6 +531,10 @@ class machine_learning_UI(QDialog):
                                         PARAM_MAXSAMPLES: 1,
                                         PARAM_MAXFEATURES: 2,
                                         PARAM_LEARNINGRATE: 3}
+
+        """初期化処理のためシグナル発行（インデックスを0に設定するため1度1にしている）"""
+        combo_selecting_bagging_or_adaboost.setCurrentIndex(1)
+        combo_selecting_bagging_or_adaboost.setCurrentIndex(0)
 
         return vbox
 
@@ -513,7 +587,7 @@ class machine_learning_UI(QDialog):
 
         return vbox
 
-    def _make_param_ledit(self, style, name, default):
+    def _make_param_ledit(self, style, name, default, do_float_validation=False):
         """パラメータラインエディット作成"""
 
         ledit = QLineEdit(self)
@@ -522,6 +596,9 @@ class machine_learning_UI(QDialog):
         ledit.textChanged[str].connect(self._on_input_params)
         ledit.setAccessibleName(name)
         ledit.setText(str(default))
+        if do_float_validation:
+            ledit.setValidator(QDoubleValidator(self))
+
 
         return ledit
 
@@ -574,10 +651,20 @@ class machine_learning_UI(QDialog):
     def _make_dict(self, making_dict, used_dict):
         """辞書を使って辞書作成"""
 
-        for key, value in used_dict.items():
+        for (key, value) in used_dict.items():
             making_dict[key] = value
 
         return making_dict
+
+    def _make_export_param_dict(self, ids, keys, values, export_dict):
+        """パラメータ書き出し用辞書作成"""
+
+        for id, key, value in zip(ids, keys, values):
+            if id:
+                export_dict[key] = value
+            else:
+                if key in export_dict:
+                    del export_dict[key]
 
 
 class ClassifierUI(machine_learning_UI):
@@ -612,7 +699,7 @@ class ClassifierUI(machine_learning_UI):
         self.combo_selecting_analysis_method.addItem(COMBO_ITEM_KNEIGHBORS)
         self.combo_selecting_analysis_method.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.combo_selecting_analysis_method.setStyleSheet(COMBO_STYLE_SELECT_CLASSIFIER)
-        self.combo_selecting_analysis_method.activated[str].connect(self._on_select_analysis_method)
+        self.combo_selecting_analysis_method.currentIndexChanged[str].connect(self._on_select_analysis_method)
 
         self.combo_selecting_penalty = super()._make_param_combo([COMBO_ITEM_L1, COMBO_ITEM_L2],
                                                                  INPUT_STYLE_PARAMS_VALID, PARAM_PENALTY)
@@ -620,11 +707,11 @@ class ClassifierUI(machine_learning_UI):
                                                                 INPUT_STYLE_PARAMS_INVALID, PARAM_KERNEL)
 
         """ラインエディットウィジェット定義"""
-        self.ledit_param_eta0 = super()._make_param_ledit(INPUT_STYLE_PARAMS_VALID, PARAM_ETA0, DEFAULT_ETA0)
-        self.ledit_param_C = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_C, DEFAULT_C)
+        self.ledit_param_eta0 = super()._make_param_ledit(INPUT_STYLE_PARAMS_VALID, PARAM_ETA0, DEFAULT_ETA0, True)
+        self.ledit_param_C = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_C, DEFAULT_C, True)
         self.ledit_param_gamma = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_GAMMA, DEFAULT_GAMMA)
-        self.ledit_param_neighbors = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_NEIGHBORS, DEFAULT_NEIGHBORS)
-        self.ledit_param_nestimators = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_NESTIMATORS, DEFAULT_NESTIMATORS)
+        self.ledit_param_neighbors = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_NEIGHBORS, DEFAULT_NEIGHBORS, True)
+        self.ledit_param_nestimators = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_NESTIMATORS, DEFAULT_NESTIMATORS, True)
 
         """ボタンウィジェット定義"""
         self.button_running_machine_learning = QPushButton(BUTTON_RUNNING_MACHINE_LEARNING, self)
@@ -688,8 +775,15 @@ class ClassifierUI(machine_learning_UI):
                                  PARAM_NEIGHBORS: 5,
                                  PARAM_NESTIMATORS: 6}
 
+        """初期化処理のためシグナル発行（インデックスを0に設定するため1度1にしている）"""
+        self.combo_selecting_analysis_method.setCurrentIndex(1)
+        self.combo_selecting_analysis_method.setCurrentIndex(0)
+
     def _on_select_analysis_method(self, method):
         """分析手法選択時"""
+
+        self.analysis_method = method
+
 
         """パラメータ入力解禁/禁止IDを作成しメソッド呼び出し"""
         valid_ids = [False for i in range(len(self.param_dictionary))]
@@ -715,6 +809,10 @@ class ClassifierUI(machine_learning_UI):
         super()._valid_param_wiget_by_method(self.param_label_wigets,
                                              self.param_input_wigets,
                                              valid_ids)
+
+        """パラメータ書き出し用辞書作成"""
+        self._make_export_param_dict(valid_ids, self.classifier_param_dict.keys(),
+                                     self.classifier_param_dict.values(), self.classifier_param_dict_for_export)
 
     def _on_clicked_running_button(self):
         """学習実行ボタン押下時"""
@@ -763,18 +861,18 @@ class PredictorUI(machine_learning_UI):
         self.combo_selecting_analysis_method.addItem(COMBO_ITEM_DEEPLEARNING)
         self.combo_selecting_analysis_method.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.combo_selecting_analysis_method.setStyleSheet(COMBO_STYLE_SELECT_PREDICTOR)
-        self.combo_selecting_analysis_method.activated[str].connect(self._on_select_analysis_method)
+        self.combo_selecting_analysis_method.currentIndexChanged[str].connect(self._on_select_analysis_method)
 
         """ラインエディットウィジェット定義"""
-        self.ledit_param_alpha = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_ALPHA, DEFAULT_ALPHA)
-        self.ledit_param_l1ratio = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_L1RATIO, DEFAULT_L1RATIO)
+        self.ledit_param_alpha = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_ALPHA, DEFAULT_ALPHA, True)
+        self.ledit_param_l1ratio = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_L1RATIO, DEFAULT_L1RATIO, True)
         self.ledit_param_maxfeatures = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_MAXFEATURES, DEFAULT_MAXFEATURES)
         self.ledit_param_maxdepth = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_MAXDEPTH, DEFAULT_MAXDEPTH)
-        self.ledit_param_nestimators = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_NESTIMATORS, DEFAULT_NESTIMATORS)
-        self.ledit_param_batchsize = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_BATCHSIZE, DEFAULT_BATCHSIZE)
-        self.ledit_param_nhidden = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_BATCHSIZE, DEFAULT_BATCHSIZE)
-        self.ledit_param_nunit = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_NUNIT, DEFAULT_NUNIT)
-        self.ledit_param_keepdroop = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_KEEPDROP, DEFAULT_KEEPDROP)
+        self.ledit_param_nestimators = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_NESTIMATORS, DEFAULT_NESTIMATORS, True)
+        self.ledit_param_batchsize = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_BATCHSIZE, DEFAULT_BATCHSIZE, True)
+        self.ledit_param_nhidden = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_BATCHSIZE, DEFAULT_BATCHSIZE, True)
+        self.ledit_param_nunit = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_NUNIT, DEFAULT_NUNIT, True)
+        self.ledit_param_keepdroop = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_KEEPDROP, DEFAULT_KEEPDROP, True)
 
         """ボタンウィジェット定義"""
         self.button_running_machine_learning = QPushButton(BUTTON_RUNNING_MACHINE_LEARNING, self)
@@ -848,8 +946,14 @@ class PredictorUI(machine_learning_UI):
                                  PARAM_NUNIT: 7,
                                  PARAM_KEEPDROP: 8}
 
+        """初期化処理のためシグナル発行（インデックスを0に設定するため1度1にしている）"""
+        self.combo_selecting_analysis_method.setCurrentIndex(1)
+        self.combo_selecting_analysis_method.setCurrentIndex(0)
+
     def _on_select_analysis_method(self, method):
         """分析手法選択時"""
+
+        self.analysis_method = method
 
         """パラメータ入力解禁/禁止IDを作成しメソッド呼び出し"""
         valid_ids = [False for i in range(len(self.param_dictionary))]
@@ -879,6 +983,10 @@ class PredictorUI(machine_learning_UI):
         super()._valid_param_wiget_by_method(self.param_label_wigets,
                                              self.param_input_wigets,
                                              valid_ids)
+
+        """パラメータ書き出し用辞書作成"""
+        self._make_export_param_dict(valid_ids, self.predictor_param_dict.keys(),
+                                     self.predictor_param_dict.values(), self.predictor_param_dict_for_export)
 
     def _on_clicked_running_button(self):
         """学習ボタン押下時"""
