@@ -1,6 +1,20 @@
-import os
+import os, sys
 import pandas as pd
 import codecs
+from constants.constants import *
+import numpy as np
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.linear_model import Perceptron, LogisticRegression, LinearRegression, RANSACRegressor, ElasticNet
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.feature_selection import SelectFromModel
+from sklearn.decomposition import PCA, KernelPCA
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import BaggingClassifier, AdaBoostClassifier, BaggingRegressor, AdaBoostRegressor, ExtraTreesRegressor
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.metrics import r2_score, mean_squared_error
 
 
 class MainControler:
@@ -70,6 +84,12 @@ class MainControler:
 class machine_learning:
     """機械学習処理のベースクラス"""
 
+    def __init__(self):
+        self.df_train_X = None
+        self.df_train_Y = None
+        self.test_ID = None
+        self.df_test = None
+
     def set_df_train(self, df):
         """トレーニングデータ設定"""
 
@@ -82,21 +102,60 @@ class machine_learning:
         self.test_ID = df.iloc[:, 0]
         self.df_test = df.iloc[:, 1:]
 
+    def set_params(self, params):
+        pass
+
     def standardize_datas(self):
         """データ標準化"""
 
-        self.df_train_X = self.standardize(self.df_train_X)
-        self.df_test = self.standardize(self.df_train_X)
-
-    def standardize(X):
-        """変数の標準化"""
-
-        """もらったデータの標準化(平均=0, 標準偏差=1)を行う"""
         sc = StandardScaler()
-        return_X = pd.DataFrame(sc.fit_transform(X))
+        self.df_train_X = pd.DataFrame(sc.fit_transform(self.df_train_X))
+        if self.df_test is not None:
+            self.df_test = pd.DataFrame(sc.fit_transform(self.df_test))
 
-        return return_X
+    def compress_datas(self, method, threshold):
+        """データ圧縮"""
 
+        if COMBO_ITEM_SELECT_FEATURES == method:
+            # 特徴量選択によりデータ圧縮
+            self.df_train_X = pd.DataFrame(get_import_features(threshold, self.df_train_X, self.df_train_Y))
+
+        elif COMBO_ITEM_PCA == method:
+            # PCAによりデータ圧縮
+            pca = PCA()
+            self.df_train_X = pd.DataFrame(pca.fit_transform(self.df_train_X))
+
+        elif COMBO_ITEM_LDA == method:
+            # LDAによりデータ圧縮
+            lda = LDA()
+            self.df_train_X = pd.DataFrame(lda.fit_transform(self.df_train_X, self.df_train_Y))
+
+        elif COMBO_ITEM_KERNEL_PCA == method:
+            # カーネルPCAによりデータ圧縮
+            kpca = KernelPCA(kernel='rbf')
+            self.df_train_X = pd.DataFrame(kpca.fit_transform(self.df_train_X))
+
+        print('テスト出力', os.path.basename(__file__), sys._getframe().f_code.co_name)
+        print(self.df_train_X.head())
+
+def get_import_features(threshold, X, y):
+    """重要な特徴量取得"""
+
+    labels = X.columns
+    forest = RandomForestClassifier(n_estimators=100, random_state=0, n_jobs=-1)
+    forest.fit(X, y)
+    importances = forest.feature_importances_   # 特徴量の重要度を抽出
+    indices = np.argsort(importances)[::-1]     # 重要度の降順で特徴量のインデックスを抽出
+    for f in range(X.shape[1]):
+        print("%2d) %-*s %f" % (f + 1, 30,
+                                labels[indices[f]],
+                                importances[indices[f]]))
+    print()
+
+    sfm = SelectFromModel(forest, threshold=threshold, prefit=True)
+    return_X = sfm.transform(X)
+
+    return return_X
 
 class Classifier(machine_learning):
     """分類に特化した機械学習処理クラス"""

@@ -167,7 +167,7 @@ class machine_learning_UI(QDialog):
         self.df_test = None
         self.do_std = False
         self.compress_method = COMBO_ITEM_METHOD_NOTSELECT
-        self.threshold = 0
+        self.threshold = DEFAULT_THRESHOLD
         self.analysis_method = COMBO_ITEM_PERCEPTRON
         self.bagada_method = COMBO_ITEM_NOTSELECT
         self.export_file_name = ''
@@ -444,6 +444,7 @@ class machine_learning_UI(QDialog):
         self.ledit_input_threshold.setEnabled(False)
         self.ledit_input_threshold.textChanged[str].connect(self._on_input_threshold)
         self.ledit_input_threshold.setStyleSheet(INPUT_STYLE_PARAMS_INVALID)
+        self.ledit_input_threshold.setText(str(DEFAULT_THRESHOLD))
         self.ledit_input_threshold.setValidator(QDoubleValidator())
 
         """レイアウト設定"""
@@ -641,12 +642,25 @@ class machine_learning_UI(QDialog):
         if self.df_test is not None:
             method_object.set_df_test(self.df_test)
 
+    def set_params(self, method_object):
+        """パラメータ設定"""
+
+        """パラメータをリスト化し設定関数呼び出し"""
+
+        method_object.set_params()
+
     def standardize_datas(self, method_object):
         """データの標準化"""
 
         """標準化チェック時のみ標準化メソッド呼び出し"""
         if self.do_std:
             method_object.standardize_datas()
+
+    def compress_datas(self, method_object):
+        """データ圧縮"""
+
+        """データ圧縮メソッド呼び出し"""
+        method_object.compress_datas(self.compress_method, self.threshold)
 
     def _make_dict(self, making_dict, used_dict):
         """辞書を使って辞書作成"""
@@ -825,6 +839,12 @@ class ClassifierUI(machine_learning_UI):
 
         """データ標準化"""
         super().standardize_datas(classifier)
+
+        """データ圧縮"""
+        super().compress_datas(classifier)
+
+        """パラメータ設定"""
+        # super().set_params(classifier)
 
 
 class PredictorUI(machine_learning_UI):
