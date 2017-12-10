@@ -712,7 +712,7 @@ class ClassifierUI(machine_learning_UI):
         self.combo_selecting_analysis_method.addItem(COMBO_ITEM_PERCEPTRON)
         self.combo_selecting_analysis_method.addItem(COMBO_ITEM_ROGISTICREGRESSION)
         self.combo_selecting_analysis_method.addItem(COMBO_ITEM_SVM)
-        self.combo_selecting_analysis_method.addItem(COMBO_ITEM_RANDOMFOREST)
+        self.combo_selecting_analysis_method.addItem(COMBO_ITEM_RANDOMFOREST_CLS)
         self.combo_selecting_analysis_method.addItem(COMBO_ITEM_KNEIGHBORS)
         self.combo_selecting_analysis_method.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.combo_selecting_analysis_method.setStyleSheet(COMBO_STYLE_SELECT_CLASSIFIER)
@@ -817,7 +817,7 @@ class ClassifierUI(machine_learning_UI):
             valid_ids[self.param_dictionary[PARAM_GAMMA]] = True
             valid_ids[self.param_dictionary[PARAM_C]] = True
 
-        elif COMBO_ITEM_RANDOMFOREST == method:
+        elif COMBO_ITEM_RANDOMFOREST_CLS == method:
             valid_ids[self.param_dictionary[PARAM_CLS_NESTIMATORS]] = True
 
         elif COMBO_ITEM_KNEIGHBORS == method:
@@ -885,7 +885,7 @@ class PredictorUI(machine_learning_UI):
         self.combo_selecting_analysis_method = QComboBox(self)
         self.combo_selecting_analysis_method.addItem(COMBO_ITEM_LINEARREGRESSION)
         self.combo_selecting_analysis_method.addItem(COMBO_ITEM_ELASTICNET)
-        self.combo_selecting_analysis_method.addItem(COMBO_ITEM_RANDOMFOREST)
+        self.combo_selecting_analysis_method.addItem(COMBO_ITEM_RANDOMFOREST_PRD)
         self.combo_selecting_analysis_method.addItem(COMBO_ITEM_EXTRATREE)
         self.combo_selecting_analysis_method.addItem(COMBO_ITEM_DEEPLEARNING)
         self.combo_selecting_analysis_method.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -994,7 +994,7 @@ class PredictorUI(machine_learning_UI):
             valid_ids[self.param_dictionary[PARAM_ALPHA]] = True
             valid_ids[self.param_dictionary[PARAM_L1RATIO]] = True
 
-        elif COMBO_ITEM_RANDOMFOREST == method:
+        elif COMBO_ITEM_RANDOMFOREST_PRD == method:
             valid_ids[self.param_dictionary[PARAM_MAXFEATURES]] = True
             valid_ids[self.param_dictionary[PARAM_MAXDEPTH]] = True
 

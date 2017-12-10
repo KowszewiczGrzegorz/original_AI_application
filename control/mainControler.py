@@ -15,6 +15,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import BaggingClassifier, AdaBoostClassifier, BaggingRegressor, AdaBoostRegressor, ExtraTreesRegressor
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import r2_score, mean_squared_error
+from sklearn.model_selection import train_test_split
 
 
 class MainControler:
@@ -90,12 +91,15 @@ class machine_learning:
         self.test_ID = None
         self.df_test = None
         self.params = {}
+        self.do_analysis_gridsearch = False
+        self.do_bagada_gridsearch = False
 
     def set_df_train(self, df):
         """トレーニングデータ設定"""
 
         self.df_train_X = df.iloc[:, 2:]
         self.df_train_Y = df.iloc[:, 1]
+        self.predicted_label = df.columns[1]
 
     def set_df_test(self, df):
         """テストデータ設定"""
@@ -112,24 +116,28 @@ class machine_learning:
             """分析手法"""
             if (key == PARAM_ANALYSIS) or (key == PARAM_BAGADA):
                 self.params[key] = value
-                print(value)
                 continue
 
-            """ハイパーパラメータ（penaltyとkernelはコンボで文字列で指定される）"""
 
             # 半角スペースと全角文字はあらかじめ除去
             hyper_param = value.replace(' ', '')
             hyper_param = re.sub('[^\x01-\x7E]','',hyper_param)
 
+            """ハイパーパラメータ（penaltyとkernelはコンボで文字列で指定される）"""
             if (PARAM_PENALTY == key) or (PARAM_KERNEL == key):
                 hyper_param = hyper_param.split(',')
                 self.params[key] = hyper_param
-                print(hyper_param)
+
+                """ハイパーパラメータが2つ以上の場合はグリッドサーチ実行フラグ有効化"""
+                if len(hyper_param) >= 2:
+                    self.do_analysis_gridsearch = True
+
                 continue
 
             """ガンマパラメータはfloatも文字列も取りうるので別処理"""
             if (PARAM_GAMMA == key) and ('auto' in hyper_param):
                 hyper_param = ['auto']
+
             else:
                 # 半角数字、コンマ、ピリオドのみ抽出
                 hyper_param = re.sub('[^0-9,.]', '', hyper_param)
@@ -138,21 +146,33 @@ class machine_learning:
                 hyper_param = [item for item in hyper_param if item != '']
                 # 1アイテムに2以上のピリオドが入っている場合は無効とし削除
                 hyper_param = [item for item in hyper_param if item.count('.')<=1]
+
                 """パラメータがint型なら一度floatにすることで値を丸める"""
                 hyper_param = list(map(float, hyper_param))
                 if self._is_int_param(key):
                     hyper_param = list(map(int, hyper_param))
 
-            print(hyper_param)
             self.params[key] = hyper_param
+
+            """分析・バグアダに応じてハイパーパラメータが2つ以上の場合はグリッドサーチ実行フラグ有効化"""
+            if (key == PARAM_BA_NESTIMATOR) or (key == PARAM_BA_MAXSAMPLES)\
+                or (key == PARAM_BA_MAX_FEATURES) or (key == PARAM_BA_LEARNINGRATE):
+                if len(hyper_param) >= 2:
+                    self.do_bagada_gridsearch = True
+            else:
+                if len(hyper_param) >= 2:
+                    self.do_analysis_gridsearch = True
 
     def standardize_datas(self):
         """データ標準化"""
 
+        # 列名退避
+        columns = list(self.df_train_X.columns)
+
         sc = StandardScaler()
-        self.df_train_X = pd.DataFrame(sc.fit_transform(self.df_train_X))
+        self.df_train_X = pd.DataFrame(sc.fit_transform(self.df_train_X), columns=columns)
         if self.df_test is not None:
-            self.df_test = pd.DataFrame(sc.fit_transform(self.df_test))
+            self.df_test = pd.DataFrame(sc.fit_transform(self.df_test), columns=columns)
 
     def compress_datas(self, method, threshold):
         """データ圧縮"""
@@ -165,21 +185,25 @@ class machine_learning:
             # PCAによりデータ圧縮
             pca = PCA()
             self.df_train_X = pd.DataFrame(pca.fit_transform(self.df_train_X))
+            self.df_test = pd.DataFrame(pca.transform(self.df_test))
 
         elif COMBO_ITEM_LDA == method:
             # LDAによりデータ圧縮
             lda = LDA()
             self.df_train_X = pd.DataFrame(lda.fit_transform(self.df_train_X, self.df_train_Y))
+            self.df_test = pd.DataFrame(lda.transform(self.df_test))
 
         elif COMBO_ITEM_KERNEL_PCA == method:
             # カーネルPCAによりデータ圧縮
             kpca = KernelPCA(kernel='rbf')
             self.df_train_X = pd.DataFrame(kpca.fit_transform(self.df_train_X))
-
-        # print(self.df_train_X.head())
+            self.df_test = pd.DataFrame(kpca.transform(self.df_test))
 
     def get_import_features(self, threshold, X, y):
         """重要な特徴量取得"""
+
+        # 列削除用に列名リスト確保
+        list_for_delete_column = []
 
         labels = X.columns
         forest = RandomForestClassifier(n_estimators=100, random_state=0, n_jobs=-1)
@@ -187,13 +211,26 @@ class machine_learning:
         importances = forest.feature_importances_   # 特徴量の重要度を抽出
         indices = np.argsort(importances)[::-1]     # 重要度の降順で特徴量のインデックスを抽出
         for f in range(X.shape[1]):
-            print("%2d) %-*s %f" % (f + 1, 30,
-                                    labels[indices[f]],
-                                    importances[indices[f]]))
+            label = labels[indices[f]]
+            importance = importances[indices[f]]
+            print("%2d) %-*s %f" % (f + 1, 30, label, importance))
+
+            list_for_delete_column.append(label)
         print()
 
         sfm = SelectFromModel(forest, threshold=threshold, prefit=True)
         return_X = sfm.transform(X)
+
+        """特徴量全削除の場合は渡って来た引数をそのまま返す"""
+        if 0 == return_X.shape[1]:
+            return self.df_train_X
+
+        """削除列数からテストデータの列削除実行"""
+        if self.df_test is not None:
+            delete_number = X.shape[1] - return_X.shape[1]
+            for i in range(delete_number):
+                delete_column = list_for_delete_column[-(i+1)]
+                del self.df_test[delete_column]
 
         return return_X
 
@@ -213,6 +250,173 @@ class machine_learning:
         else:
             return False
 
+    def make_method_param_grid(self):
+        """分析グリッドサーチ用グリッド作成"""
+
+        param_grid = []
+
+        # パーセプトロン
+        if self.params[PARAM_ANALYSIS] == COMBO_ITEM_PERCEPTRON:
+            param_grid = [
+                {'eta0': self.params[PARAM_ETA0], 'penalty': self.params[PARAM_PENALTY]}
+            ]
+
+        # ロジスティック回帰
+        elif self.params[PARAM_ANALYSIS] == COMBO_ITEM_ROGISTICREGRESSION:
+            param_grid = [
+                {'penalty': self.params[PARAM_PENALTY]}
+            ]
+
+        # SVM
+        elif self.params[PARAM_ANALYSIS] == COMBO_ITEM_SVM:
+            if COMBO_ITEM_RBF in self.params[PARAM_KERNEL]:
+                param_grid.append({'kernel': ['rbf'], 'gamma': self.params[PARAM_GAMMA], 'C': self.params[PARAM_C]})
+            if COMBO_ITEM_LINEAR in self.params[PARAM_KERNEL]:
+                param_grid.append({'kernel': ['linear'], 'C': self.params[PARAM_C]})
+
+        # 分類ランダムフォレスト
+        elif self.params[PARAM_ANALYSIS] == COMBO_ITEM_RANDOMFOREST_CLS:
+            param_grid = [
+                {'n_estimators': self.params[PARAM_CLS_NESTIMATORS]}
+            ]
+
+        # k近傍法
+        elif self.params[PARAM_ANALYSIS] == COMBO_ITEM_KNEIGHBORS:
+            param_grid = [
+                {'n_neighbors': self.params[PARAM_NEIGHBORS]}
+            ]
+
+        # 線形回帰
+        elif self.params[PARAM_ANALYSIS] == COMBO_ITEM_LINEARREGRESSION:
+            param_grid = []
+
+        # ElasticNet
+        elif self.params[PARAM_ANALYSIS] == COMBO_ITEM_ELASTICNET:
+            param_grid = [
+                {'alpha': self.params[PARAM_ALPHA], 'l1_ratio': self.params[PARAM_L1RATIO]}
+            ]
+
+        # 回帰ランダムフォレスト
+        elif self.params[PARAM_ANALYSIS] == COMBO_ITEM_RANDOMFOREST_PRD:
+            param_grid = [
+                {'max_features': self.params[PARAM_MAXFEATURES], 'max_depth': self.params[PARAM_MAXDEPTH]}
+            ]
+
+        # エクストラツリー
+        elif self.params[PARAM_ANALYSIS] == COMBO_ITEM_EXTRATREE:
+            param_grid = [
+                {'n_estimators': self.params[PARAM_PRD_NESTIMATORS],
+                 'max_features': self.params[PARAM_MAXFEATURES], 'max_depth': self.params[PARAM_MAXDEPTH]}
+            ]
+
+        return param_grid
+
+    def make_bagada_param_grid(self):
+        """バギング/アダブーストグリッドサーチ用グリッド作成"""
+
+        param_grid = []
+
+        # バギング
+        if self.params[PARAM_BAGADA] == COMBO_ITEM_BAGGING:
+            param_grid = [
+                {'n_estimators': self.params[PARAM_BA_NESTIMATOR], 'max_samples': self.params[PARAM_BA_MAXSAMPLES],
+                 'max_features': self.params[PARAM_BA_MAX_FEATURES]}
+            ]
+
+        # アダブースト
+        if self.params[PARAM_BAGADA] == COMBO_ITEM_ADABOOST:
+            param_grid = [
+                {'n_estimators': self.params[PARAM_BA_NESTIMATOR], 'learning_rate': self.params[PARAM_BA_LEARNINGRATE]}
+            ]
+
+        return param_grid
+
+    def get_grid_search_estimator(self, estimator, X_train, y_train, param_grid, scoring='accuracy'):
+        """グリッドサーチを実行し、実行後の推定器を返す"""
+
+        gs = GridSearchCV(estimator=estimator, param_grid=param_grid, scoring=scoring, cv=10, n_jobs=-1)
+        gs.fit(X_train, y_train)
+
+        print(gs.best_params_)
+
+        return gs.best_estimator_
+
+    def show_classifier_accuracy(self, estimator, X_train, y_train, X_test, y_test, predicted):
+        """分類正解率出力"""
+
+        print('*** トレーニングデータでの結果 ***')
+        train_score = estimator.score(X_train, y_train)
+        test_score = estimator.score(X_test, y_test)
+        print('Train Accuracy: ', train_score, 'Test Accuracy: ', test_score)
+
+        if predicted is not None:
+            print('*** テストデータを用いて結果 ***')
+            difference = abs(self.df_train_Y.mean() - int(predicted.mean()))
+            print('Abs mean difference: ', difference)
+
+        print()
+
+    def process_csv(self, predicted):
+        """csv出力処理"""
+
+        """「predict_data.csv」を削除してから出力"""
+        if os.path.exists('predict_data.csv'):
+            os.remove('predict_data.csv')
+
+        df_output = pd.concat([self.test_ID, predicted], axis=1)
+        df_output.to_csv('predict_data.csv', index=False)
+
+    def Perceptron_(self, X_train, X_test, y_train, y_test,):
+        """パーセプトロン実行"""
+
+        """分析グリッドサーチ実行フラグに応じて推定器作成"""
+        if True == self.do_analysis_gridsearch:
+            estimator = Perceptron(random_state=0, shuffle=True)
+            param_grid = self.make_method_param_grid()
+            estimator = self.get_grid_search_estimator(estimator, X_train, y_train, param_grid)
+
+        else:
+            estimator = Perceptron(eta0=self.params[PARAM_ETA0][0], penalty=self.params[PARAM_PENALTY][0],
+                                   random_state=0, shuffle=True, n_jobs=-1)
+            estimator.fit(X_train, y_train)
+
+        """バギング/アダブースト推定器作成"""
+        if COMBO_ITEM_BAGGING == self.params[PARAM_BAGADA]:
+            """バギング/アダブーストグリッドサーチ実行フラグに応じて推定器作成"""
+            if True == self.do_bagada_gridsearch:
+                estimator = BaggingClassifier(base_estimator=estimator, random_state=0, n_jobs=-1)
+                bagging_param_grid =self.make_bagada_param_grid()
+                estimator = self.get_grid_search_estimator(estimator, X_train, y_train, bagging_param_grid)
+
+            else:
+                estimator = BaggingClassifier(base_estimator=estimator, n_estimators=self.params[PARAM_BA_NESTIMATOR][0],
+                                              max_samples=self.params[PARAM_BA_MAXSAMPLES][0],
+                                              max_features=self.params[PARAM_BA_MAX_FEATURES][0],
+                                              random_state=0, n_jobs=-1)
+                estimator.fit(X_train, y_train)
+
+        elif COMBO_ITEM_ADABOOST == self.params[PARAM_BAGADA]:
+            """バギング/アダブーストグリッドサーチ実行フラグに応じて推定器作成"""
+            if True == self.do_bagada_gridsearch:
+                estimator = AdaBoostClassifier(base_estimator=estimator, algorithm='SAMME', random_state=0)
+                bagging_param_grid = self.make_bagada_param_grid()
+                estimator = self.get_grid_search_estimator(estimator, X_train, y_train, bagging_param_grid)
+
+            else:
+                estimator = AdaBoostClassifier(base_estimator=estimator, n_estimators=self.params[PARAM_BA_NESTIMATOR][0],
+                                               learning_rate=self.params[PARAM_BA_LEARNINGRATE][0], algorithm='SAMME',
+                                               random_state=0)
+                estimator.fit(X_train, y_train)
+
+        """テストデータが存在する場合は予測結果をcsv出力"""
+        predicted = None
+        if self.df_test is not None:
+            predicted = pd.DataFrame(estimator.predict(self.df_test), columns=[self.predicted_label])
+            self.process_csv(predicted)
+
+        # 正解率出力
+        self.show_classifier_accuracy(estimator, X_train, y_train, X_test, y_test, predicted)
+
 
 class Classifier(machine_learning):
     """分類に特化した機械学習処理クラス"""
@@ -223,14 +427,17 @@ class Classifier(machine_learning):
     def run_learning(self):
         """学習実行"""
 
+        """訓練データを訓練用とテスト用に分割"""
+        X_train, X_test, y_train, y_test = train_test_split(self.df_train_X, self.df_train_Y, test_size=TEST_SIZE, random_state=0)
+
         """分析手法別に学習実施"""
         if COMBO_ITEM_PERCEPTRON == self.params[PARAM_ANALYSIS]:
-            pass
+            super().Perceptron_(X_train, X_test, y_train, y_test)
         elif COMBO_ITEM_ROGISTICREGRESSION == self.params[PARAM_ANALYSIS]:
             pass
         elif COMBO_ITEM_SVM == self.params[PARAM_ANALYSIS]:
             pass
-        elif COMBO_ITEM_RANDOMFOREST == self.params[PARAM_ANALYSIS]:
+        elif COMBO_ITEM_RANDOMFOREST_CLS == self.params[PARAM_ANALYSIS]:
             pass
         elif COMBO_ITEM_KNEIGHBORS == self.params[PARAM_ANALYSIS]:
             pass
@@ -253,7 +460,7 @@ class Predictor(machine_learning):
             pass
         elif COMBO_ITEM_ELASTICNET == self.params[PARAM_ANALYSIS]:
             pass
-        elif COMBO_ITEM_RANDOMFOREST == self.params[PARAM_ANALYSIS]:
+        elif COMBO_ITEM_RANDOMFOREST_PRD == self.params[PARAM_ANALYSIS]:
             pass
         elif COMBO_ITEM_EXTRATREE == self.params[PARAM_ANALYSIS]:
             pass
