@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, re
 import pandas as pd
 import codecs
 from constants.constants import *
@@ -106,8 +106,45 @@ class machine_learning:
     def set_params(self, params):
         """パラメータ設定"""
 
+        """分析手法はそのまま保存し、ハイパーパラメータは不要入力値を除去しリスト化して保存"""
         for key, value in params.items():
-            self.params[key] = value
+
+            """分析手法"""
+            if (key == PARAM_ANALYSIS) or (key == PARAM_BAGADA):
+                self.params[key] = value
+                print(value)
+                continue
+
+            """ハイパーパラメータ（penaltyとkernelはコンボで文字列で指定される）"""
+
+            # 半角スペースと全角文字はあらかじめ除去
+            hyper_param = value.replace(' ', '')
+            hyper_param = re.sub('[^\x01-\x7E]','',hyper_param)
+
+            if (PARAM_PENALTY == key) or (PARAM_KERNEL == key):
+                hyper_param = hyper_param.split(',')
+                self.params[key] = hyper_param
+                print(hyper_param)
+                continue
+
+            """ガンマパラメータはfloatも文字列も取りうるので別処理"""
+            if (PARAM_GAMMA == key) and ('auto' in hyper_param):
+                hyper_param = ['auto']
+            else:
+                # 半角数字、コンマ、ピリオドのみ抽出
+                hyper_param = re.sub('[^0-9,.]', '', hyper_param)
+                hyper_param = hyper_param.split(',')
+                # 空のアイテムを削除
+                hyper_param = [item for item in hyper_param if item != '']
+                # 1アイテムに2以上のピリオドが入っている場合は無効とし削除
+                hyper_param = [item for item in hyper_param if item.count('.')<=1]
+                """パラメータがint型なら一度floatにすることで値を丸める"""
+                hyper_param = list(map(float, hyper_param))
+                if self._is_int_param(key):
+                    hyper_param = list(map(int, hyper_param))
+
+            print(hyper_param)
+            self.params[key] = hyper_param
 
     def standardize_datas(self):
         """データ標準化"""
@@ -160,11 +197,46 @@ class machine_learning:
 
         return return_X
 
+    def run_predict(self):
+        """予測実行"""
+
+        if self.df_test is None:
+            return
+
+    def _is_int_param(self, key):
+        """パラメータがint型であるか判定"""
+
+        if (PARAM_NEIGHBORS == key) or (PARAM_MAXDEPTH == key) or (PARAM_MAXFEATURES == key)\
+           or (PARAM_CLS_NESTIMATORS == key) or (PARAM_PRD_NESTIMATORS == key) or (PARAM_BATCHSIZE == key)\
+           or (PARAM_NHIDDEN == key) or (PARAM_NUNIT == key) or (PARAM_BA_NESTIMATOR == key) or (PARAM_BA_MAX_FEATURES == key):
+            return True
+        else:
+            return False
+
+
 class Classifier(machine_learning):
     """分類に特化した機械学習処理クラス"""
 
     def __init__(self):
         super().__init__()
+
+    def run_learning(self):
+        """学習実行"""
+
+        """分析手法別に学習実施"""
+        if COMBO_ITEM_PERCEPTRON == self.params[PARAM_ANALYSIS]:
+            pass
+        elif COMBO_ITEM_ROGISTICREGRESSION == self.params[PARAM_ANALYSIS]:
+            pass
+        elif COMBO_ITEM_SVM == self.params[PARAM_ANALYSIS]:
+            pass
+        elif COMBO_ITEM_RANDOMFOREST == self.params[PARAM_ANALYSIS]:
+            pass
+        elif COMBO_ITEM_KNEIGHBORS == self.params[PARAM_ANALYSIS]:
+            pass
+        else:
+            print('該当分析手法なし')
+
 
 
 class Predictor(machine_learning):
@@ -172,3 +244,20 @@ class Predictor(machine_learning):
 
     def __init__(self):
         super().__init__()
+
+    def run_learning(self):
+        """学習実行"""
+
+        """分析手法別に学習実施"""
+        if COMBO_ITEM_LINEARREGRESSION == self.params[PARAM_ANALYSIS]:
+            pass
+        elif COMBO_ITEM_ELASTICNET == self.params[PARAM_ANALYSIS]:
+            pass
+        elif COMBO_ITEM_RANDOMFOREST == self.params[PARAM_ANALYSIS]:
+            pass
+        elif COMBO_ITEM_EXTRATREE == self.params[PARAM_ANALYSIS]:
+            pass
+        elif COMBO_ITEM_DEEPLEARNING == self.params[PARAM_ANALYSIS]:
+            pass
+        else:
+            print('該当分析手法なし')

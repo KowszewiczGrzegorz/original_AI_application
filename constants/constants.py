@@ -56,6 +56,7 @@ PARAM_NUNIT = 'n_unit'
 PARAM_KEEPDROP = 'keep_drop'
 PARAM_MAXSAMPLES = 'n_max_samples'
 PARAM_LEARNINGRATE = 'learning_rate'
+PARAM_NESTIMATORS = 'n_estimators'
 COMBO_ITEM_L1 = 'L1'
 COMBO_ITEM_L2 = 'L2'
 COMBO_ITEM_RBF = 'RBF'
@@ -324,4 +325,26 @@ LABEL_STYLE_SAVE_FILE = \
     'QLabel {'\
     'background-color: white; color: #4a8d00;' \
     'font-family: Arial; font-size:14px;' \
+    '}'
+
+COMBO_INPUT_STYLE_PARAMS_VALID = \
+    'QComboBox {'\
+    'color: gray;' \
+    'font-weight: bold;' \
+    'border-width: 1px; border-color: gray; border-radius: 2px; border-style: solid;' \
+    'width: 100px;' \
+    'padding-left:3px; padding-top:2px; padding-bottom: 2px;' \
+    '}' \
+    'QComboBox:drop-down {'\
+    'border-width: 0px;' \
+    'background-color: gray' \
+    '}' \
+    'QFrame {' \
+    'color: gray;' \
+    'border: 1px solid gray; border-radius: 2px;' \
+    '}' \
+    'QLineEdit {' \
+    'color: #4a8d00; background-color: #f0fff6;' \
+    'border-width: 0px; border-radius: 2px;' \
+    'width: 100px' \
     '}'
