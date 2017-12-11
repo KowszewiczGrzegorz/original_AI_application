@@ -850,10 +850,19 @@ class ClassifierUI(machine_learning_UI):
         super().set_params(classifier)
 
         """学習実行"""
-        classifier.run_learning()
+        estimator = classifier.run_learning()
 
         """予測実行"""
-        classifier.run_predict()
+        predicted = None
+        if self.df_test is not None:
+            predicted = classifier.run_predict(estimator)
+
+        """結果取得"""
+        train_score, test_score, difference = classifier.get_classifer_result(estimator, predicted)
+
+        """結果出力"""
+        result_shower = ClsResultShowerUI(train_score, test_score, difference)
+        result_shower.exec_()
 
 
 class PredictorUI(machine_learning_UI):
@@ -1035,8 +1044,33 @@ class PredictorUI(machine_learning_UI):
         """パラメータ設定"""
         super().set_params(predictor)
 
-        """学習実行"""
-        predictor.run_learning()
 
-        """予測実行"""
-        predictor.run_predict()
+class ResultShowerUI(QDialog):
+    """結果出力親クラス"""
+
+    def __init__(self, train_score, test_score, difference):
+        super().__init__()
+
+        """ウィンドウの基本設定"""
+        self.setGeometry(340, 340, 10, 10)
+        self.setStyleSheet(WINDOW_APPLICATION)
+
+        self.train_score = train_score
+        self.test_score = test_score
+        self.difference = difference
+
+
+class ClsResultShowerUI(ResultShowerUI):
+    """分類結果出力クラス"""
+
+    def __init__(self, train_score, test_score, difference):
+        super().__init__(train_score, test_score, difference)
+        self._initialize()
+
+        print(self.train_score)
+
+    def _initialize(self):
+        """初期化"""
+
+        pass
+

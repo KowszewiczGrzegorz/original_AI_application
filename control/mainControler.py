@@ -234,11 +234,17 @@ class machine_learning:
 
         return return_X
 
-    def run_predict(self):
+    def run_predict(self, estimator):
         """予測実行"""
 
-        if self.df_test is None:
-            return
+        predicted = None
+
+        """テストデータが存在する場合は予測結果をcsv出力"""
+        if self.df_test is not None:
+            predicted = pd.DataFrame(estimator.predict(self.df_test), columns=[self.predicted_label])
+            self.process_csv(predicted)
+
+        return predicted
 
     def _is_int_param(self, key):
         """パラメータがint型であるか判定"""
@@ -341,20 +347,21 @@ class machine_learning:
 
         return gs.best_estimator_
 
-    def show_classifier_accuracy(self, estimator, X_train, y_train, X_test, y_test, predicted):
-        """分類正解率出力"""
+    def get_classifer_result(self, estimator, predicted=None):
+        """分類結果返却"""
 
-        print('*** トレーニングデータでの結果 ***')
-        train_score = estimator.score(X_train, y_train)
-        test_score = estimator.score(X_test, y_test)
+        train_score = estimator.score(self.X_train, self.y_train)
+        test_score = estimator.score(self.X_test, self.y_test)
         print('Train Accuracy: ', train_score, 'Test Accuracy: ', test_score)
 
+        difference= None
         if predicted is not None:
-            print('*** テストデータを用いて結果 ***')
             difference = abs(self.df_train_Y.mean() - int(predicted.mean()))
             print('Abs mean difference: ', difference)
 
         print()
+
+        return train_score, test_score, difference
 
     def process_csv(self, predicted):
         """csv出力処理"""
@@ -366,19 +373,21 @@ class machine_learning:
         df_output = pd.concat([self.test_ID, predicted], axis=1)
         df_output.to_csv('predict_data.csv', index=False)
 
-    def Perceptron_(self, X_train, X_test, y_train, y_test,):
+    def Perceptron_(self):
         """パーセプトロン実行"""
+
+        estimator = None
 
         """分析グリッドサーチ実行フラグに応じて推定器作成"""
         if True == self.do_analysis_gridsearch:
             estimator = Perceptron(random_state=0, shuffle=True)
             param_grid = self.make_method_param_grid()
-            estimator = self.get_grid_search_estimator(estimator, X_train, y_train, param_grid)
+            estimator = self.get_grid_search_estimator(estimator, self.X_train, self.y_train, param_grid)
 
         else:
             estimator = Perceptron(eta0=self.params[PARAM_ETA0][0], penalty=self.params[PARAM_PENALTY][0],
                                    random_state=0, shuffle=True, n_jobs=-1)
-            estimator.fit(X_train, y_train)
+            estimator.fit(self.X_train, self.y_train)
 
         """バギング/アダブースト推定器作成"""
         if COMBO_ITEM_BAGGING == self.params[PARAM_BAGADA]:
@@ -386,36 +395,29 @@ class machine_learning:
             if True == self.do_bagada_gridsearch:
                 estimator = BaggingClassifier(base_estimator=estimator, random_state=0, n_jobs=-1)
                 bagging_param_grid =self.make_bagada_param_grid()
-                estimator = self.get_grid_search_estimator(estimator, X_train, y_train, bagging_param_grid)
+                estimator = self.get_grid_search_estimator(estimator, self._train, self.y_train, bagging_param_grid)
 
             else:
                 estimator = BaggingClassifier(base_estimator=estimator, n_estimators=self.params[PARAM_BA_NESTIMATOR][0],
                                               max_samples=self.params[PARAM_BA_MAXSAMPLES][0],
                                               max_features=self.params[PARAM_BA_MAX_FEATURES][0],
                                               random_state=0, n_jobs=-1)
-                estimator.fit(X_train, y_train)
+                estimator.fit(self.X_train, self.y_train)
 
         elif COMBO_ITEM_ADABOOST == self.params[PARAM_BAGADA]:
             """バギング/アダブーストグリッドサーチ実行フラグに応じて推定器作成"""
             if True == self.do_bagada_gridsearch:
                 estimator = AdaBoostClassifier(base_estimator=estimator, algorithm='SAMME', random_state=0)
                 bagging_param_grid = self.make_bagada_param_grid()
-                estimator = self.get_grid_search_estimator(estimator, X_train, y_train, bagging_param_grid)
+                estimator = self.get_grid_search_estimator(estimator, self.X_train, self.y_train, bagging_param_grid)
 
             else:
                 estimator = AdaBoostClassifier(base_estimator=estimator, n_estimators=self.params[PARAM_BA_NESTIMATOR][0],
                                                learning_rate=self.params[PARAM_BA_LEARNINGRATE][0], algorithm='SAMME',
                                                random_state=0)
-                estimator.fit(X_train, y_train)
+                estimator.fit(self.X_train, self.y_train)
 
-        """テストデータが存在する場合は予測結果をcsv出力"""
-        predicted = None
-        if self.df_test is not None:
-            predicted = pd.DataFrame(estimator.predict(self.df_test), columns=[self.predicted_label])
-            self.process_csv(predicted)
-
-        # 正解率出力
-        self.show_classifier_accuracy(estimator, X_train, y_train, X_test, y_test, predicted)
+        return estimator
 
 
 class Classifier(machine_learning):
@@ -428,11 +430,12 @@ class Classifier(machine_learning):
         """学習実行"""
 
         """訓練データを訓練用とテスト用に分割"""
-        X_train, X_test, y_train, y_test = train_test_split(self.df_train_X, self.df_train_Y, test_size=TEST_SIZE, random_state=0)
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.df_train_X, self.df_train_Y, test_size=TEST_SIZE, random_state=0)
 
         """分析手法別に学習実施"""
+        estimator = None
         if COMBO_ITEM_PERCEPTRON == self.params[PARAM_ANALYSIS]:
-            super().Perceptron_(X_train, X_test, y_train, y_test)
+            estimator = super().Perceptron_()
         elif COMBO_ITEM_ROGISTICREGRESSION == self.params[PARAM_ANALYSIS]:
             pass
         elif COMBO_ITEM_SVM == self.params[PARAM_ANALYSIS]:
@@ -444,6 +447,7 @@ class Classifier(machine_learning):
         else:
             print('該当分析手法なし')
 
+        return estimator
 
 
 class Predictor(machine_learning):
