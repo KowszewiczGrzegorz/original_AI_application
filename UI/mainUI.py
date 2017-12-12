@@ -1052,12 +1052,25 @@ class ResultShowerUI(QDialog):
         super().__init__()
 
         """ウィンドウの基本設定"""
-        self.setGeometry(340, 340, 10, 10)
+        self.setGeometry(340, 340, 0, 0)
         self.setStyleSheet(WINDOW_APPLICATION)
+        self.setWindowTitle(WINDOW_TITLE_RESULT_CLASSIFIER)
 
         self.train_score = train_score
         self.test_score = test_score
         self.difference = difference
+
+    def _make_result_label_part(self, vbox):
+        """結果出力ラベル部作成"""
+
+        """ラベルウィジェット定義"""
+        self.label_displaying_result = QLabel(LABEL_DISPLAYING_RESULTLABEL, self)
+        self.label_displaying_result.setStyleSheet(LABEL_STYLE_BASIC_MSG)
+
+        """レイアウト設定"""
+        vbox.addWidget(self.label_displaying_result)
+
+        return vbox
 
 
 class ClsResultShowerUI(ResultShowerUI):
@@ -1067,10 +1080,52 @@ class ClsResultShowerUI(ResultShowerUI):
         super().__init__(train_score, test_score, difference)
         self._initialize()
 
-        print(self.train_score)
-
     def _initialize(self):
         """初期化"""
 
-        pass
+        vbox = QVBoxLayout()
+
+        """結果出力ラベル部作成"""
+        vbox = super()._make_result_label_part(vbox)
+
+        """結果スコア表示部作成"""
+        """train_scoreとtest_score部"""
+        self.label_displaying_trainscore = QLabel(str(self.train_score), self)
+        self.label_displaying_testscore = QLabel(str(self.test_score), self)
+        self.label_displaying_trainscorelabel = QLabel(LABEL_DISPLAYING_TRAINSCORE, self)
+        self.label_displaying_testscorelabel = QLabel(LABEL_DISPLAYING_TESTSCORE, self)
+        self.label_displaying_trainscore.setStyleSheet(LABEL_STYLE_SCORE)
+        self.label_displaying_testscore.setStyleSheet(LABEL_STYLE_SCORE)
+        self.label_displaying_trainscorelabel.setStyleSheet(LABEL_STYLE_SCORELABEL)
+        self.label_displaying_testscorelabel.setStyleSheet(LABEL_STYLE_SCORELABEL)
+
+        hbox = QHBoxLayout()
+        hbox.addWidget(self.label_displaying_trainscorelabel)
+        hbox.addWidget(self.label_displaying_trainscore)
+        hbox.addStretch()
+        hbox2 = QHBoxLayout()
+        hbox2.addWidget(self.label_displaying_testscorelabel)
+        hbox2.addWidget(self.label_displaying_testscore)
+        hbox2.addStretch()
+        vbox.addLayout(hbox)
+        vbox.addLayout(hbox2)
+
+        """difference部"""
+        if self.difference is not None:
+            self.label_dsplaying_difference = QLabel(str(self.difference), self)
+            self.label_dsplaying_differencelabel = QLabel(LABEL_DISPLAYING_DIFFERENCE, self)
+            self.label_dsplaying_difference.setStyleSheet(LABEL_STYLE_SCORE)
+            self.label_dsplaying_differencelabel.setStyleSheet(LABEL_STYLE_SCORELABEL)
+
+            hbox3 = QHBoxLayout()
+            hbox3.addWidget(self.label_dsplaying_differencelabel)
+            hbox3.addWidget(self.label_dsplaying_difference)
+            hbox3.addStretch()
+            vbox.addSpacing(SPACE_BETWEEN_PARTS)
+            vbox.addLayout(hbox3)
+
+        self.setLayout(vbox)
+
+
+
 

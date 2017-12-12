@@ -352,14 +352,10 @@ class machine_learning:
 
         train_score = estimator.score(self.X_train, self.y_train)
         test_score = estimator.score(self.X_test, self.y_test)
-        print('Train Accuracy: ', train_score, 'Test Accuracy: ', test_score)
 
         difference= None
         if predicted is not None:
             difference = abs(self.df_train_Y.mean() - int(predicted.mean()))
-            print('Abs mean difference: ', difference)
-
-        print()
 
         return train_score, test_score, difference
 

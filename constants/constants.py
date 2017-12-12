@@ -83,6 +83,11 @@ PARAM_BA_MAX_FEATURES = 'BagAda/max_features'
 PARAM_BA_LEARNINGRATE = 'BagAda/learning_rate'
 PARAM_CLASSFIER_OR_PREDICTOR = '分類か予測か'
 PARAM_FILENAME = 'ファイル名'
+LABEL_DISPLAYING_RESULTLABEL = '結果出力'
+LABEL_DISPLAYING_TRAINSCORE = 'Train Accuracy: '
+LABEL_DISPLAYING_TESTSCORE = 'Test Accuracy: '
+LABEL_DISPLAYING_DIFFERENCE = 'Difference train and predict: '
+WINDOW_TITLE_RESULT_CLASSIFIER = 'Clsssifier Result'
 
 """数値"""
 SPACE_BETWEEN_PARTS = 15
@@ -349,4 +354,16 @@ COMBO_INPUT_STYLE_PARAMS_VALID = \
     'color: #4a8d00; background-color: #f0fff6;' \
     'border-width: 0px; border-radius: 2px;' \
     'width: 100px' \
+    '}'
+
+LABEL_STYLE_SCORE = \
+    'QLabel {'\
+    'background-color: white; color: #4a8d00;' \
+    'font-family: Consolas; font-size:14px;' \
+    '}'
+
+LABEL_STYLE_SCORELABEL = \
+    'QLabel {'\
+    'background-color: white; color: #4a8d00;' \
+    'font-family: Arial; font-size:14px;' \
     '}'
