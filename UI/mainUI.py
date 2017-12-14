@@ -859,6 +859,9 @@ class ClassifierUI(machine_learning_UI):
 
         """結果取得"""
         train_score, test_score, difference = classifier.get_classifer_result(estimator, predicted)
+        train_score = round(train_score, NUMBER_OF_DECIMAL_DIGIT)
+        test_score = round(test_score, NUMBER_OF_DECIMAL_DIGIT)
+        difference = round(difference, NUMBER_OF_DECIMAL_DIGIT)
 
         """結果出力"""
         result_shower = ClsResultShowerUI(train_score, test_score, difference)
@@ -1099,16 +1102,11 @@ class ClsResultShowerUI(ResultShowerUI):
         self.label_displaying_trainscorelabel.setStyleSheet(LABEL_STYLE_SCORELABEL)
         self.label_displaying_testscorelabel.setStyleSheet(LABEL_STYLE_SCORELABEL)
 
-        hbox = QHBoxLayout()
-        hbox.addWidget(self.label_displaying_trainscorelabel)
-        hbox.addWidget(self.label_displaying_trainscore)
-        hbox.addStretch()
-        hbox2 = QHBoxLayout()
-        hbox2.addWidget(self.label_displaying_testscorelabel)
-        hbox2.addWidget(self.label_displaying_testscore)
-        hbox2.addStretch()
-        vbox.addLayout(hbox)
-        vbox.addLayout(hbox2)
+        grid = QGridLayout()
+        grid.addWidget(self.label_displaying_trainscorelabel, 0, 0)
+        grid.addWidget(self.label_displaying_trainscore, 0, 1)
+        grid.addWidget(self.label_displaying_testscorelabel, 1, 0)
+        grid.addWidget(self.label_displaying_testscore, 1, 1)
 
         """difference部"""
         if self.difference is not None:
@@ -1117,13 +1115,10 @@ class ClsResultShowerUI(ResultShowerUI):
             self.label_dsplaying_difference.setStyleSheet(LABEL_STYLE_SCORE)
             self.label_dsplaying_differencelabel.setStyleSheet(LABEL_STYLE_SCORELABEL)
 
-            hbox3 = QHBoxLayout()
-            hbox3.addWidget(self.label_dsplaying_differencelabel)
-            hbox3.addWidget(self.label_dsplaying_difference)
-            hbox3.addStretch()
-            vbox.addSpacing(SPACE_BETWEEN_PARTS)
-            vbox.addLayout(hbox3)
+            grid.addWidget(self.label_dsplaying_differencelabel, 2, 0)
+            grid.addWidget(self.label_dsplaying_difference, 2, 1)
 
+        vbox.addLayout(grid)
         self.setLayout(vbox)
 
 

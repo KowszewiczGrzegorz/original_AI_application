@@ -58,8 +58,8 @@ PARAM_KEEPDROP = 'keep_drop'
 PARAM_MAXSAMPLES = 'n_max_samples'
 PARAM_LEARNINGRATE = 'learning_rate'
 PARAM_NESTIMATORS = 'n_estimators'
-COMBO_ITEM_L1 = 'L1'
-COMBO_ITEM_L2 = 'L2'
+COMBO_ITEM_L1 = 'l1'
+COMBO_ITEM_L2 = 'l2'
 COMBO_ITEM_RBF = 'rbf'
 COMBO_ITEM_LINEAR = 'linear'
 LABEL_DISPLAYING_BAG_ADA = 'バギング/アダブースト設定'
@@ -115,6 +115,7 @@ DEFAULT_BA_MAXSAMPLES = 1.0
 DEFAULT_BA_MAXFEATURES = 1.0
 DEFAULT_BA_LEARNINGRATE = 1
 TEST_SIZE = 0.7
+NUMBER_OF_DECIMAL_DIGIT = 3
 
 """パス"""
 APPLICATION_ICON_PATH = '../UI/images/icon_ai.png'
@@ -359,7 +360,7 @@ COMBO_INPUT_STYLE_PARAMS_VALID = \
 LABEL_STYLE_SCORE = \
     'QLabel {'\
     'background-color: white; color: #4a8d00;' \
-    'font-family: Consolas; font-size:14px;' \
+    'font-family: Consolas; font-size:14px; font-weight: bold' \
     '}'
 
 LABEL_STYLE_SCORELABEL = \

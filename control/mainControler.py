@@ -369,29 +369,23 @@ class machine_learning:
         df_output = pd.concat([self.test_ID, predicted], axis=1)
         df_output.to_csv('predict_data.csv', index=False)
 
-    def Perceptron_(self):
-        """パーセプトロン実行"""
+    def make_grid_search_estimator(self, estimator):
+        """グリッドサーチ用パラメータを作成し実行"""
 
-        estimator = None
+        param_grid = self.make_method_param_grid()
+        estimator = self.get_grid_search_estimator(estimator, self.X_train, self.y_train, param_grid)
 
-        """分析グリッドサーチ実行フラグに応じて推定器作成"""
-        if True == self.do_analysis_gridsearch:
-            estimator = Perceptron(random_state=0, shuffle=True)
-            param_grid = self.make_method_param_grid()
-            estimator = self.get_grid_search_estimator(estimator, self.X_train, self.y_train, param_grid)
+        return estimator
 
-        else:
-            estimator = Perceptron(eta0=self.params[PARAM_ETA0][0], penalty=self.params[PARAM_PENALTY][0],
-                                   random_state=0, shuffle=True, n_jobs=-1)
-            estimator.fit(self.X_train, self.y_train)
-
+    def make_bag_ada_estimator(self, estimator):
         """バギング/アダブースト推定器作成"""
+
         if COMBO_ITEM_BAGGING == self.params[PARAM_BAGADA]:
             """バギング/アダブーストグリッドサーチ実行フラグに応じて推定器作成"""
             if True == self.do_bagada_gridsearch:
                 estimator = BaggingClassifier(base_estimator=estimator, random_state=0, n_jobs=-1)
-                bagging_param_grid =self.make_bagada_param_grid()
-                estimator = self.get_grid_search_estimator(estimator, self._train, self.y_train, bagging_param_grid)
+                bagging_param_grid = self.make_bagada_param_grid()
+                estimator = self.get_grid_search_estimator(estimator, self.X_train, self.y_train, bagging_param_grid)
 
             else:
                 estimator = BaggingClassifier(base_estimator=estimator, n_estimators=self.params[PARAM_BA_NESTIMATOR][0],
@@ -415,6 +409,45 @@ class machine_learning:
 
         return estimator
 
+    def Perceptron_(self):
+        """パーセプトロン実行"""
+
+        estimator = None
+
+        """分析グリッドサーチ実行フラグに応じて推定器作成"""
+        if True == self.do_analysis_gridsearch:
+            estimator = Perceptron(random_state=0, shuffle=True)
+            estimator = self.make_grid_search_estimator(estimator)
+
+        else:
+            estimator = Perceptron(eta0=self.params[PARAM_ETA0][0], penalty=self.params[PARAM_PENALTY][0],
+                                   random_state=0, shuffle=True, n_jobs=-1)
+            estimator.fit(self.X_train, self.y_train)
+
+        """バギング/アダブースト推定器作成"""
+        estimator = self.make_bag_ada_estimator(estimator)
+
+        return estimator
+
+    def LogisticRegression_(self):
+        """ロジスティック回帰実行"""
+
+        estimator = None
+
+        """分析グリッドサーチ実行フラグに応じて推定器作成"""
+        if True == self.do_analysis_gridsearch:
+            estimator = LogisticRegression(random_state=0)
+            estimator = self.make_grid_search_estimator(estimator)
+
+        else:
+            estimator = LogisticRegression(penalty=self.params[PARAM_PENALTY][0], random_state=0, n_jobs=-1)
+            estimator.fit(self.X_train, self.y_train)
+
+        """バギング/アダブースト推定器作成"""
+        estimator = self.make_bag_ada_estimator(estimator)
+
+        return estimator
+
 
 class Classifier(machine_learning):
     """分類に特化した機械学習処理クラス"""
@@ -433,7 +466,7 @@ class Classifier(machine_learning):
         if COMBO_ITEM_PERCEPTRON == self.params[PARAM_ANALYSIS]:
             estimator = super().Perceptron_()
         elif COMBO_ITEM_ROGISTICREGRESSION == self.params[PARAM_ANALYSIS]:
-            pass
+            estimator = super().LogisticRegression_()
         elif COMBO_ITEM_SVM == self.params[PARAM_ANALYSIS]:
             pass
         elif COMBO_ITEM_RANDOMFOREST_CLS == self.params[PARAM_ANALYSIS]:
