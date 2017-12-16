@@ -251,7 +251,7 @@ class machine_learning:
 
         if (PARAM_NEIGHBORS == key) or (PARAM_MAXDEPTH == key) or (PARAM_MAXFEATURES == key)\
            or (PARAM_CLS_NESTIMATORS == key) or (PARAM_PRD_NESTIMATORS == key) or (PARAM_BATCHSIZE == key)\
-           or (PARAM_NHIDDEN == key) or (PARAM_NUNIT == key) or (PARAM_BA_NESTIMATOR == key) or (PARAM_BA_MAX_FEATURES == key):
+           or (PARAM_NHIDDEN == key) or (PARAM_NUNIT == key) or (PARAM_BA_NESTIMATOR == key):
             return True
         else:
             return False
@@ -388,22 +388,24 @@ class machine_learning:
                 estimator = self.get_grid_search_estimator(estimator, self.X_train, self.y_train, bagging_param_grid)
 
             else:
-                estimator = BaggingClassifier(base_estimator=estimator, n_estimators=self.params[PARAM_BA_NESTIMATOR][0],
+                estimator = BaggingClassifier(base_estimator=estimator,
+                                              n_estimators=self.params[PARAM_BA_NESTIMATOR][0],
                                               max_samples=self.params[PARAM_BA_MAXSAMPLES][0],
                                               max_features=self.params[PARAM_BA_MAX_FEATURES][0],
-                                              random_state=0, n_jobs=-1)
+                                              random_state=0)
                 estimator.fit(self.X_train, self.y_train)
 
         elif COMBO_ITEM_ADABOOST == self.params[PARAM_BAGADA]:
             """バギング/アダブーストグリッドサーチ実行フラグに応じて推定器作成"""
             if True == self.do_bagada_gridsearch:
-                estimator = AdaBoostClassifier(base_estimator=estimator, algorithm='SAMME', random_state=0)
+                estimator = AdaBoostClassifier(base_estimator=estimator, random_state=0)
                 bagging_param_grid = self.make_bagada_param_grid()
                 estimator = self.get_grid_search_estimator(estimator, self.X_train, self.y_train, bagging_param_grid)
 
             else:
-                estimator = AdaBoostClassifier(base_estimator=estimator, n_estimators=self.params[PARAM_BA_NESTIMATOR][0],
-                                               learning_rate=self.params[PARAM_BA_LEARNINGRATE][0], algorithm='SAMME',
+                estimator = AdaBoostClassifier(base_estimator=estimator,
+                                               n_estimators=self.params[PARAM_BA_NESTIMATOR][0],
+                                               learning_rate=self.params[PARAM_BA_LEARNINGRATE][0],
                                                random_state=0)
                 estimator.fit(self.X_train, self.y_train)
 
@@ -448,6 +450,64 @@ class machine_learning:
 
         return estimator
 
+    def SVM_(self):
+        """SVM実行"""
+
+        estimator = None
+
+        """分析グリッドサーチ実行フラグに応じて推定器作成"""
+        if True == self.do_analysis_gridsearch:
+            estimator = SVC(random_state=0)
+            estimator = self.make_grid_search_estimator(estimator)
+
+        else:
+            estimator = SVC(kernel=self.params[PARAM_KERNEL][0], gamma=self.params[PARAM_GAMMA][0],
+                            C=self.params[PARAM_C][0], random_state=0)
+            estimator.fit(self.X_train, self.y_train)
+
+        """バギング/アダブースト推定器作成"""
+        estimator = self.make_bag_ada_estimator(estimator)
+
+        return estimator
+
+    def RandomForest_(self):
+        """ランダムフォレスト実行"""
+
+        estimator = None
+
+        """分析グリッドサーチ実行フラグに応じて推定器作成"""
+        if True == self.do_analysis_gridsearch:
+            estimator = RandomForestClassifier(random_state=0)
+            estimator = self.make_grid_search_estimator(estimator)
+
+        else:
+            estimator = RandomForestClassifier(n_estimators=self.params[PARAM_CLS_NESTIMATORS][0], random_state=0)
+            estimator.fit(self.X_train, self.y_train)
+
+        """バギング/アダブースト推定器作成"""
+        estimator = self.make_bag_ada_estimator(estimator)
+
+        return estimator
+
+    def KNeighbors_(self):
+        """k近傍法実行"""
+
+        estimator = None
+
+        """分析グリッドサーチ実行フラグに応じて推定器作成"""
+        if True == self.do_analysis_gridsearch:
+            estimator = KNeighborsClassifier()
+            estimator = self.make_grid_search_estimator(estimator)
+
+        else:
+            estimator = KNeighborsClassifier(n_neighbors=self.params[PARAM_NEIGHBORS][0])
+            estimator.fit(self.X_train, self.y_train)
+
+        """バギング/アダブースト推定器作成"""
+        estimator = self.make_bag_ada_estimator(estimator)
+
+        return estimator
+
 
 class Classifier(machine_learning):
     """分類に特化した機械学習処理クラス"""
@@ -468,11 +528,11 @@ class Classifier(machine_learning):
         elif COMBO_ITEM_ROGISTICREGRESSION == self.params[PARAM_ANALYSIS]:
             estimator = super().LogisticRegression_()
         elif COMBO_ITEM_SVM == self.params[PARAM_ANALYSIS]:
-            pass
+            estimator = super().SVM_()
         elif COMBO_ITEM_RANDOMFOREST_CLS == self.params[PARAM_ANALYSIS]:
-            pass
+            estimator = super().RandomForest_()
         elif COMBO_ITEM_KNEIGHBORS == self.params[PARAM_ANALYSIS]:
-            pass
+            estimator = super().KNeighbors_()
         else:
             print('該当分析手法なし')
 

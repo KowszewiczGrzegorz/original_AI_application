@@ -861,7 +861,8 @@ class ClassifierUI(machine_learning_UI):
         train_score, test_score, difference = classifier.get_classifer_result(estimator, predicted)
         train_score = round(train_score, NUMBER_OF_DECIMAL_DIGIT)
         test_score = round(test_score, NUMBER_OF_DECIMAL_DIGIT)
-        difference = round(difference, NUMBER_OF_DECIMAL_DIGIT)
+        if difference is not None:
+            difference = round(difference, NUMBER_OF_DECIMAL_DIGIT)
 
         """結果出力"""
         result_shower = ClsResultShowerUI(train_score, test_score, difference)
