@@ -165,7 +165,7 @@ class machine_learning_UI(QDialog):
 
         self.df_train = None
         self.df_test = None
-        self.do_std = False
+        self.do_std = True
         self.compress_method = COMBO_ITEM_METHOD_NOTSELECT
         self.threshold = DEFAULT_THRESHOLD
         self.analysis_method = COMBO_ITEM_PERCEPTRON
@@ -423,6 +423,7 @@ class machine_learning_UI(QDialog):
         """チェックボックスウィジェット定義"""
         self.chk_selecting_std = QCheckBox(CHK_SELECTING_STD, self)
         self.chk_selecting_std.setStyleSheet(CHK_SELECTING_STD)
+        self.chk_selecting_std.setChecked(True)
         self.chk_selecting_std.stateChanged.connect(self._on_check_std_chkbutton)
 
         """コンボボックスウィジェット定義"""

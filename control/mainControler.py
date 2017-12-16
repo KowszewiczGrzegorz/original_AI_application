@@ -406,7 +406,7 @@ class machine_learning:
                 estimator = AdaBoostClassifier(base_estimator=estimator,
                                                n_estimators=self.params[PARAM_BA_NESTIMATOR][0],
                                                learning_rate=self.params[PARAM_BA_LEARNINGRATE][0],
-                                               random_state=0)
+                                               algorithm = 'SAMME', random_state=0)
                 estimator.fit(self.X_train, self.y_train)
 
         return estimator
