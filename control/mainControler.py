@@ -346,11 +346,13 @@ class machine_learning:
 
         print(gs.best_params_)
 
-        """バギング/アダブースト版と通常版を分けて出力用パラメータ辞書作成"""
+        """ベース推定器ごとに処理を分けて出力用パラメータ辞書作成"""
         if type(estimator) == BaggingClassifier or type(estimator) == AdaBoostClassifier:
             self._make_output_dict_for_BagAda(gs.best_params_)
+        if type(estimator) == SVC:
+            self._make_output_dict_for_SVM(gs.best_params_)
         if type(estimator) == RandomForestClassifier:
-            self._make_output_dict_for_clsrandomforest()
+            self._make_output_dict_for_clsrandomforest(gs.best_params_)
         else:
             self._make_dict(self.o_params, gs.best_params_)
 
@@ -369,6 +371,16 @@ class machine_learning:
             elif 'learning_rate' == key:
                 self.o_params[PARAM_BA_LEARNINGRATE] = value
             else:
+                self.o_params[key] = value
+
+    def _make_output_dict_for_SVM(self, best_params):
+        """SVMのグリッドサーチ時の出力辞書作成"""
+
+        """グリッドサーチの結果ガンマが使用されなかった場合は削除"""
+        if PARAM_GAMMA not in best_params:
+            del self.o_params[PARAM_GAMMA]
+
+        for (key, value) in best_params.items():
                 self.o_params[key] = value
 
     def _make_output_dict_for_clsrandomforest(self, best_params):

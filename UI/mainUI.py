@@ -1,3 +1,4 @@
+import re
 from constants.constants import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
@@ -1092,16 +1093,37 @@ class ResultShowerUI(QDialog):
             param_labels.append(label_widget)
 
             """パラメータ値"""
-            label_widget = QLabel(str(value), self)
+            text = re.sub('[\]\[\']','',str(value))
+            label_widget = QLabel(text, self)
             label_widget.setStyleSheet(LABEL_STYLE_SCORE)
             param_labels.append(label_widget)
 
         """レイアウト設定"""
         grid = QGridLayout()
-        for index, label_widget in enumerate(param_labels):
-            row_number = int(index / N_COLUMN_IN_PARAM_RESULT)
-            column_number = int(index % N_COLUMN_IN_PARAM_RESULT)
-            """パラメータ値（偶数列）は右寄せで表示"""
+        row_number = 0
+        column_number = 0
+        is_method_value = False
+        for label_widget in param_labels:
+            """分析手法またはバグアダ手法の場合は1列で表示"""
+            param_analysis_text = PARAM_ANALYSIS + ": "
+            param_bagada_text = PARAM_BAGADA + ": "
+            if param_analysis_text == label_widget.text() or param_bagada_text == label_widget.text():
+                column_number = 0
+                grid.addWidget(label_widget, row_number, column_number)
+                column_number += 1
+                is_method_value = True
+                continue
+            if is_method_value:
+                hbox = QHBoxLayout()
+                hbox.addStretch()
+                hbox.addWidget(label_widget)
+                grid.addLayout(hbox, row_number, column_number)
+                row_number += 1
+                column_number = 0
+                is_method_value = False
+                continue
+
+            """パラメータの場合は2列で表示"""
             if column_number % 2 == 0:
                 grid.addWidget(label_widget, row_number, column_number)
             else:
@@ -1109,6 +1131,11 @@ class ResultShowerUI(QDialog):
                 hbox.addStretch()
                 hbox.addWidget(label_widget)
                 grid.addLayout(hbox, row_number, column_number)
+
+            column_number += 1
+            if column_number >= N_COLUMN_IN_PARAM_RESULT:
+                row_number += 1
+                column_number = 0
 
         vbox.addLayout(grid)
         vbox.addSpacing(SPACE_BETWEEN_PARAMS)
