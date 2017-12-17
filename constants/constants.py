@@ -113,7 +113,7 @@ DEFAULT_KEEPDROP = 1.0
 DEFAULT_BA_NESTIMATOR = 10
 DEFAULT_BA_MAXSAMPLES = 1.0
 DEFAULT_BA_MAXFEATURES = 1.0
-DEFAULT_BA_LEARNINGRATE = 1
+DEFAULT_BA_LEARNINGRATE = 1.0
 TEST_SIZE = 0.7
 NUMBER_OF_DECIMAL_DIGIT = 3
 N_COLUMN_IN_PARAM_RESULT = 4
@@ -208,7 +208,7 @@ COMBO_STYLE_SELECT_CLASSIFIER = \
     'color: #aaff00;' \
     'font-weight: bold;' \
     'border-width: 1px; border-color: #aaff00; border-radius: 2px; border-style: solid;' \
-    'width: 92px;' \
+    'width: 112px;' \
     'padding-left:3px; padding-right:-14px; padding-top:2px; padding-bottom: 2px;' \
     '}' \
     'QComboBox:drop-down {'\

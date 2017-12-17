@@ -349,9 +349,9 @@ class machine_learning:
         """ベース推定器ごとに処理を分けて出力用パラメータ辞書作成"""
         if type(estimator) == BaggingClassifier or type(estimator) == AdaBoostClassifier:
             self._make_output_dict_for_BagAda(gs.best_params_)
-        if type(estimator) == SVC:
+        elif type(estimator) == SVC:
             self._make_output_dict_for_SVM(gs.best_params_)
-        if type(estimator) == RandomForestClassifier:
+        elif type(estimator) == RandomForestClassifier:
             self._make_output_dict_for_clsrandomforest(gs.best_params_)
         else:
             self._make_dict(self.o_params, gs.best_params_)
@@ -396,7 +396,6 @@ class machine_learning:
         for (key, value) in best_params.items():
             if 'n_estimators' == key:
                 self.o_params[PARAM_PRD_NESTIMATORS] = value
-
 
     def get_classifer_result(self, estimator, predicted=None):
         """分類結果返却"""
