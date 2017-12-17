@@ -870,6 +870,7 @@ class ClassifierUI(machine_learning_UI):
         result_shower = ClsResultShowerUI(self, train_score, test_score, difference, params)
         result_shower.show()
 
+
 class PredictorUI(machine_learning_UI):
     """予測UIクラス"""
 
@@ -1109,6 +1110,7 @@ class ResultShowerUI(QDialog):
             param_bagada_text = PARAM_BAGADA + ": "
             if param_analysis_text == label_widget.text() or param_bagada_text == label_widget.text():
                 column_number = 0
+                row_number += 1
                 grid.addWidget(label_widget, row_number, column_number)
                 column_number += 1
                 is_method_value = True
