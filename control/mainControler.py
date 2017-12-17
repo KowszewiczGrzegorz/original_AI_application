@@ -93,6 +93,7 @@ class machine_learning:
         self.params = {}
         self.do_analysis_gridsearch = False
         self.do_bagada_gridsearch = False
+        self.o_params = self.params
 
     def set_df_train(self, df):
         """トレーニングデータ設定"""
@@ -345,19 +346,59 @@ class machine_learning:
 
         print(gs.best_params_)
 
+        """バギング/アダブースト版と通常版を分けて出力用パラメータ辞書作成"""
+        if type(estimator) == BaggingClassifier or type(estimator) == AdaBoostClassifier:
+            self._make_output_dict_for_BagAda(gs.best_params_)
+        if type(estimator) == RandomForestClassifier:
+            self._make_output_dict_for_clsrandomforest()
+        else:
+            self._make_dict(self.o_params, gs.best_params_)
+
         return gs.best_estimator_
+
+    def _make_output_dict_for_BagAda(self, best_params):
+        """バギング/アダブーストのグリッドサーチ時の出力辞書作成"""
+
+        for (key, value) in best_params.items():
+            if 'max_features' == key:
+                self.o_params[PARAM_BA_MAX_FEATURES] = value
+            elif 'max_samples' == key:
+                self.o_params[PARAM_BA_MAXSAMPLES] = value
+            elif 'n_estimators' == key:
+                self.o_params[PARAM_BA_NESTIMATOR] = value
+            elif 'learning_rate' == key:
+                self.o_params[PARAM_BA_LEARNINGRATE] = value
+            else:
+                self.o_params[key] = value
+
+    def _make_output_dict_for_clsrandomforest(self, best_params):
+        """分類ランダムフォレストのグリッドサーチ時の出力辞書作成"""
+
+        for (key, value) in best_params.items():
+            if 'n_estimators' == key:
+                self.o_params[PARAM_CLS_NESTIMATORS] = value
+
+    def _make_output_dict_for_prdextratree(self, best_params):
+        """回帰エクストラツリーのグリッドサーチ時の出力辞書作成"""
+
+        for (key, value) in best_params.items():
+            if 'n_estimators' == key:
+                self.o_params[PARAM_PRD_NESTIMATORS] = value
+
 
     def get_classifer_result(self, estimator, predicted=None):
         """分類結果返却"""
 
+        """トレーニングデータのみのスコア"""
         train_score = estimator.score(self.X_train, self.y_train)
         test_score = estimator.score(self.X_test, self.y_test)
 
+        """出力データを用いたスコア"""
         difference= None
         if predicted is not None:
             difference = abs(self.df_train_Y.mean() - int(predicted.mean()))
 
-        return train_score, test_score, difference
+        return train_score, test_score, difference, self.o_params
 
     def process_csv(self, predicted):
         """csv出力処理"""
@@ -383,7 +424,7 @@ class machine_learning:
         if COMBO_ITEM_BAGGING == self.params[PARAM_BAGADA]:
             """バギング/アダブーストグリッドサーチ実行フラグに応じて推定器作成"""
             if True == self.do_bagada_gridsearch:
-                estimator = BaggingClassifier(base_estimator=estimator, random_state=0, n_jobs=-1)
+                estimator = BaggingClassifier(base_estimator=estimator, random_state=0)
                 bagging_param_grid = self.make_bagada_param_grid()
                 estimator = self.get_grid_search_estimator(estimator, self.X_train, self.y_train, bagging_param_grid)
 
@@ -406,10 +447,18 @@ class machine_learning:
                 estimator = AdaBoostClassifier(base_estimator=estimator,
                                                n_estimators=self.params[PARAM_BA_NESTIMATOR][0],
                                                learning_rate=self.params[PARAM_BA_LEARNINGRATE][0],
-                                               algorithm = 'SAMME', random_state=0)
+                                               algorithm='SAMME', random_state=0)
                 estimator.fit(self.X_train, self.y_train)
 
         return estimator
+
+    def _make_dict(self, making_dict, used_dict):
+        """辞書を使って辞書作成"""
+
+        for (key, value) in used_dict.items():
+            making_dict[key] = value
+
+        return making_dict
 
     def Perceptron_(self):
         """パーセプトロン実行"""

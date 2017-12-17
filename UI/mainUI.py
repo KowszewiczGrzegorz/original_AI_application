@@ -859,22 +859,21 @@ class ClassifierUI(machine_learning_UI):
             predicted = classifier.run_predict(estimator)
 
         """結果取得"""
-        train_score, test_score, difference = classifier.get_classifer_result(estimator, predicted)
+        train_score, test_score, difference, params = classifier.get_classifer_result(estimator, predicted)
         train_score = round(train_score, NUMBER_OF_DECIMAL_DIGIT)
         test_score = round(test_score, NUMBER_OF_DECIMAL_DIGIT)
         if difference is not None:
             difference = round(difference, NUMBER_OF_DECIMAL_DIGIT)
 
         """結果出力"""
-        result_shower = ClsResultShowerUI(train_score, test_score, difference)
-        result_shower.exec_()
-
+        result_shower = ClsResultShowerUI(self, train_score, test_score, difference, params)
+        result_shower.show()
 
 class PredictorUI(machine_learning_UI):
     """予測UIクラス"""
 
     def __init__(self):
-        super().__init__()
+        super().__init__(self)
         self._initialize()
 
     def _initialize(self):
@@ -882,6 +881,8 @@ class PredictorUI(machine_learning_UI):
 
         """ウィンドウの基本設定"""
         self.setWindowTitle(WINDOW_TITLE_PREDICTOR)
+        self.setModal(False)
+
 
         """ラベルウィジェット定義"""
         self.label_displaying_predictor_method = super()._make_label_wiget(LABEL_DISPLAYING_PREDICTOR, self, LABEL_STYLE_BASIC_MSG)
@@ -1053,8 +1054,8 @@ class PredictorUI(machine_learning_UI):
 class ResultShowerUI(QDialog):
     """結果出力親クラス"""
 
-    def __init__(self, train_score, test_score, difference):
-        super().__init__()
+    def __init__(self, parent, train_score, test_score, difference, params):
+        super().__init__(parent)
 
         """ウィンドウの基本設定"""
         self.setGeometry(340, 340, 0, 0)
@@ -1064,6 +1065,7 @@ class ResultShowerUI(QDialog):
         self.train_score = train_score
         self.test_score = test_score
         self.difference = difference
+        self.params = params
 
     def _make_result_label_part(self, vbox):
         """結果出力ラベル部作成"""
@@ -1077,12 +1079,48 @@ class ResultShowerUI(QDialog):
 
         return vbox
 
+    def _make_use_param_part(self, vbox):
+        """使用パラメータ表示部作成"""
+
+        """ラベルウィジェット定義"""
+        param_labels = []
+        for (key, value) in self.params.items():
+            """パラメータ名"""
+            text = key + ': '
+            label_widget = QLabel(text, self)
+            label_widget.setStyleSheet(LABEL_STYLE_SCORELABEL)
+            param_labels.append(label_widget)
+
+            """パラメータ値"""
+            label_widget = QLabel(str(value), self)
+            label_widget.setStyleSheet(LABEL_STYLE_SCORE)
+            param_labels.append(label_widget)
+
+        """レイアウト設定"""
+        grid = QGridLayout()
+        for index, label_widget in enumerate(param_labels):
+            row_number = int(index / N_COLUMN_IN_PARAM_RESULT)
+            column_number = int(index % N_COLUMN_IN_PARAM_RESULT)
+            """パラメータ値（偶数列）は右寄せで表示"""
+            if column_number % 2 == 0:
+                grid.addWidget(label_widget, row_number, column_number)
+            else:
+                hbox = QHBoxLayout()
+                hbox.addStretch()
+                hbox.addWidget(label_widget)
+                grid.addLayout(hbox, row_number, column_number)
+
+        vbox.addLayout(grid)
+        vbox.addSpacing(SPACE_BETWEEN_PARAMS)
+
+        return vbox
+
 
 class ClsResultShowerUI(ResultShowerUI):
     """分類結果出力クラス"""
 
-    def __init__(self, train_score, test_score, difference):
-        super().__init__(train_score, test_score, difference)
+    def __init__(self, parenct, train_score, test_score, difference, params):
+        super().__init__(parenct, train_score, test_score, difference, params)
         self._initialize()
 
     def _initialize(self):
@@ -1092,6 +1130,9 @@ class ClsResultShowerUI(ResultShowerUI):
 
         """結果出力ラベル部作成"""
         vbox = super()._make_result_label_part(vbox)
+
+        """使用パラメータ表示部作成"""
+        vbox = super()._make_use_param_part(vbox)
 
         """結果スコア表示部作成"""
         """train_scoreとtest_score部"""
@@ -1104,11 +1145,17 @@ class ClsResultShowerUI(ResultShowerUI):
         self.label_displaying_trainscorelabel.setStyleSheet(LABEL_STYLE_SCORELABEL)
         self.label_displaying_testscorelabel.setStyleSheet(LABEL_STYLE_SCORELABEL)
 
+        hbox1 = QHBoxLayout()
+        hbox2 = QHBoxLayout()
+        hbox1.addStretch()
+        hbox1.addWidget(self.label_displaying_trainscore)
+        hbox2.addStretch()
+        hbox2.addWidget(self.label_displaying_testscore)
         grid = QGridLayout()
         grid.addWidget(self.label_displaying_trainscorelabel, 0, 0)
-        grid.addWidget(self.label_displaying_trainscore, 0, 1)
-        grid.addWidget(self.label_displaying_testscorelabel, 1, 0)
-        grid.addWidget(self.label_displaying_testscore, 1, 1)
+        grid.addLayout(hbox1, 0, 1)
+        grid.addWidget(self.label_displaying_testscorelabel, 0, 2)
+        grid.addLayout(hbox2, 0, 3)
 
         """difference部"""
         if self.difference is not None:
@@ -1117,8 +1164,8 @@ class ClsResultShowerUI(ResultShowerUI):
             self.label_dsplaying_difference.setStyleSheet(LABEL_STYLE_SCORE)
             self.label_dsplaying_differencelabel.setStyleSheet(LABEL_STYLE_SCORELABEL)
 
-            grid.addWidget(self.label_dsplaying_differencelabel, 2, 0)
-            grid.addWidget(self.label_dsplaying_difference, 2, 1)
+            grid.addWidget(self.label_dsplaying_differencelabel, 1, 0)
+            grid.addWidget(self.label_dsplaying_difference, 1, 1)
 
         vbox.addLayout(grid)
         self.setLayout(vbox)
