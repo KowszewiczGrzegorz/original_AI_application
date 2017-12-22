@@ -348,16 +348,6 @@ class machine_learning_UI(QDialog):
         self._make_export_param_dict(valid_ids, self.bagada_param_dict.keys(),
                                      self.bagada_param_dict.values(), self.bagada_param_dict_for_export)
 
-    def _on_input_bag_ada(self, value):
-        """バギング/アダブーストパラメータ入力時"""
-
-        """送り主特定"""
-        sender_name = self.sender().accessibleName()
-        print('name:', sender_name)
-        print('value:', value)
-
-        pass
-    
     def _on_clicked_param_save_button(self):
         """パラメータ保存ボタン押下時"""
 
@@ -645,7 +635,7 @@ class machine_learning_UI(QDialog):
         """パラメータ設定"""
 
         """パラメータをリスト化し設定関数呼び出し"""
-        param_dict = {}
+        param_dict = OrderedDict()
         param_dict[PARAM_ANALYSIS] = self.analysis_method
         param_dict = self._make_dict(param_dict, self.classifier_param_dict_for_export)
         param_dict = self._make_dict(param_dict, self.predictor_param_dict_for_export)
@@ -875,7 +865,7 @@ class PredictorUI(machine_learning_UI):
     """予測UIクラス"""
 
     def __init__(self):
-        super().__init__(self)
+        super().__init__()
         self._initialize()
 
     def _initialize(self):
@@ -1052,11 +1042,33 @@ class PredictorUI(machine_learning_UI):
         """パラメータ設定"""
         super().set_params(predictor)
 
+        """学習実行"""
+        estimator = predictor.run_learning()
+
+        """予測実行"""
+        predicted = None
+        if self.df_test is not None:
+            predicted = predictor.run_predict(estimator)
+
+        """結果取得"""
+        mean_squared_errors, r2_scores, difference, params = predictor.get_predictor_result(estimator, predicted)
+        round(mean_squared_errors[TRAIN], NUMBER_OF_DECIMAL_DIGIT)
+        round(mean_squared_errors[TEST], NUMBER_OF_DECIMAL_DIGIT)
+        round(r2_scores[TRAIN], NUMBER_OF_DECIMAL_DIGIT)
+        round(r2_scores[TEST], NUMBER_OF_DECIMAL_DIGIT)
+        if difference is not None:
+            difference = round(difference, NUMBER_OF_DECIMAL_DIGIT)
+
+        """結果出力"""
+        result_shower = PrdResultShowerUI(self, mean_squared_errors, r2_scores, difference, params)
+        result_shower.show()
+
 
 class ResultShowerUI(QDialog):
     """結果出力親クラス"""
 
-    def __init__(self, parent, train_score, test_score, difference, params):
+    def __init__(self, parent, params, train_score=None, test_score=None,
+                 mean_squared_errors=None, r2_scores=None, difference=None):
         super().__init__(parent)
 
         """ウィンドウの基本設定"""
@@ -1066,6 +1078,8 @@ class ResultShowerUI(QDialog):
 
         self.train_score = train_score
         self.test_score = test_score
+        self.mean_squared_errors = mean_squared_errors
+        self.r2_scores = r2_scores
         self.difference = difference
         self.params = params
 
@@ -1149,7 +1163,8 @@ class ClsResultShowerUI(ResultShowerUI):
     """分類結果出力クラス"""
 
     def __init__(self, parenct, train_score, test_score, difference, params):
-        super().__init__(parenct, train_score, test_score, difference, params)
+        super().__init__(parenct, train_score=train_score,
+                         test_score=test_score, difference=difference, params=params)
         self._initialize()
 
     def _initialize(self):
@@ -1200,5 +1215,78 @@ class ClsResultShowerUI(ResultShowerUI):
         self.setLayout(vbox)
 
 
+class PrdResultShowerUI(ResultShowerUI):
+    """予測結果出力クラス"""
+
+    def __init__(self, parent, mean_squared_errors, r2_scores, difference, params):
+        super().__init__(parent, mean_squared_errors=mean_squared_errors,
+                         r2_scores=r2_scores, difference=difference, params=params)
+        self._initialize()
+
+    def _initialize(self):
+        """初期化"""
+
+        vbox = QVBoxLayout()
+
+        """結果出力ラベル部作成"""
+        vbox = super()._make_result_label_part(vbox)
+
+        """使用パラメータ表示部作成"""
+        vbox = super()._make_use_param_part(vbox)
+
+        """結果スコア表示部作成"""
+        """mean_squared_errorsとr2_scores部"""
+        self.label_displaying_mse_train = QLabel(str(self.mean_squared_errors[TRAIN]), self)
+        self.label_displaying_mse_test = QLabel(str(self.mean_squared_errors[TEST]), self)
+        self.label_displaying_mselabel_train = QLabel(LABEL_DISPLAYING_TRAINMSE, self)
+        self.label_displaying_mselabel_test = QLabel(LABEL_DISPLAYING_TRAINMSE, self)
+        self.label_displaying_r2_train = QLabel(str(self.r2_scores[TRAIN]), self)
+        self.label_displaying_r2_test = QLabel(str(self.r2_scores[TEST]), self)
+        self.label_displaying_r2label_train = QLabel(LABEL_DISPLAYING_TRAINR2, self)
+        self.label_displaying_r2label_test = QLabel(LABEL_DISPLAYING_TRAINR2, self)
+
+        self.label_displaying_mse_train.setStyleSheet(LABEL_STYLE_SCORE)
+        self.label_displaying_mse_test.setStyleSheet(LABEL_STYLE_SCORE)
+        self.label_displaying_mselabel_train.setStyleSheet(LABEL_STYLE_SCORELABEL)
+        self.label_displaying_mselabel_test.setStyleSheet(LABEL_STYLE_SCORELABEL)
+        self.label_displaying_r2_train.setStyleSheet(LABEL_STYLE_SCORE)
+        self.label_displaying_r2_test.setStyleSheet(LABEL_STYLE_SCORE)
+        self.label_displaying_r2label_train.setStyleSheet(LABEL_STYLE_SCORELABEL)
+        self.label_displaying_r2label_test.setStyleSheet(LABEL_STYLE_SCORELABEL)
+
+        hbox1 = QHBoxLayout()
+        hbox2 = QHBoxLayout()
+        hbox3 = QHBoxLayout()
+        hbox4 = QHBoxLayout()
+        hbox1.addStretch()
+        hbox1.addWidget(self.label_displaying_mse_train)
+        hbox2.addStretch()
+        hbox2.addWidget(self.label_displaying_mse_test)
+        hbox3.addStretch()
+        hbox3.addWidget(self.label_displaying_r2_train)
+        hbox4.addStretch()
+        hbox4.addWidget(self.label_displaying_r2_test)
+        grid = QGridLayout()
+        grid.addWidget(self.label_displaying_mselabel_train, 0, 0)
+        grid.addLayout(hbox1, 0, 1)
+        grid.addWidget(self.label_displaying_mselabel_test, 0, 2)
+        grid.addLayout(hbox2, 0, 3)
+        grid.addWidget(self.label_displaying_r2label_train, 1, 0)
+        grid.addLayout(hbox3, 1, 1)
+        grid.addWidget(self.label_displaying_r2label_test, 1, 2)
+        grid.addLayout(hbox4, 1, 3)
+
+        """difference部"""
+        if self.difference is not None:
+            self.label_dsplaying_difference = QLabel(str(self.difference), self)
+            self.label_dsplaying_differencelabel = QLabel(LABEL_DISPLAYING_DIFFERENCE, self)
+            self.label_dsplaying_difference.setStyleSheet(LABEL_STYLE_SCORE)
+            self.label_dsplaying_differencelabel.setStyleSheet(LABEL_STYLE_SCORELABEL)
+
+            grid.addWidget(self.label_dsplaying_differencelabel, 2, 0)
+            grid.addWidget(self.label_dsplaying_difference, 2, 1)
+
+        vbox.addLayout(grid)
+        self.setLayout(vbox)
 
 

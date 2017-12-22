@@ -2,6 +2,7 @@ import os, sys, re
 import pandas as pd
 import codecs
 from constants.constants import *
+from collections import OrderedDict
 import numpy as np
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.linear_model import Perceptron, LogisticRegression, LinearRegression, RANSACRegressor, ElasticNet
@@ -88,9 +89,13 @@ class machine_learning:
     def __init__(self):
         self.df_train_X = None
         self.df_train_Y = None
+        self.X_train = None
+        self.X_test = None
+        self.y_train = None
+        self.y_test = None
         self.test_ID = None
         self.df_test = None
-        self.params = {}
+        self.params = OrderedDict()
         self.do_analysis_gridsearch = False
         self.do_bagada_gridsearch = False
         self.o_params = self.params
@@ -200,6 +205,10 @@ class machine_learning:
             self.df_train_X = pd.DataFrame(kpca.fit_transform(self.df_train_X))
             self.df_test = pd.DataFrame(kpca.transform(self.df_test))
 
+        """訓練データを訓練用とテスト用に分割"""
+        self.X_train, self.X_test, self.y_train, self.y_test = \
+            train_test_split(self.df_train_X, self.df_train_Y, test_size=TEST_SIZE, random_state=0)
+
     def get_import_features(self, threshold, X, y):
         """重要な特徴量取得"""
 
@@ -214,10 +223,8 @@ class machine_learning:
         for f in range(X.shape[1]):
             label = labels[indices[f]]
             importance = importances[indices[f]]
-            print("%2d) %-*s %f" % (f + 1, 30, label, importance))
 
             list_for_delete_column.append(label)
-        print()
 
         sfm = SelectFromModel(forest, threshold=threshold, prefit=True)
         return_X = sfm.transform(X)
@@ -338,13 +345,11 @@ class machine_learning:
 
         return param_grid
 
-    def get_grid_search_estimator(self, estimator, X_train, y_train, param_grid, scoring='accuracy'):
+    def get_grid_search_estimator(self, estimator, param_grid, scoring='accuracy'):
         """グリッドサーチを実行し、実行後の推定器を返す"""
 
         gs = GridSearchCV(estimator=estimator, param_grid=param_grid, scoring=scoring, cv=10, n_jobs=-1)
-        gs.fit(X_train, y_train)
-
-        print(gs.best_params_)
+        gs.fit(self.X_train, self.y_train)
 
         """ベース推定器ごとに処理を分けて出力用パラメータ辞書作成"""
         if type(estimator) == BaggingClassifier or type(estimator) == AdaBoostClassifier:
@@ -411,6 +416,31 @@ class machine_learning:
 
         return train_score, test_score, difference, self.o_params
 
+    def get_predictor_result(self, estimator, predicted=None):
+        """予測結果返却"""
+
+        """トレーニングデータのみのスコア"""
+        train_pred = estimator.predict(self.X_train)
+        test_pred = estimator.predict(self.X_test)
+
+        # 標準二乗誤差
+        train_mean_squared_error = mean_squared_error(self.y_train, train_pred)
+        test_mean_squared_error = mean_squared_error(self.y_test, test_pred)
+        mean_squared_errors = (train_mean_squared_error, test_mean_squared_error)
+
+        # 決定係数
+        train_r2_score = r2_score(self.y_train, train_pred)
+        test_r2_score = r2_score(self.y_test, test_pred)
+        r2_scores = (train_r2_score, test_r2_score)
+
+        """出力データを用いたスコア"""
+        difference = None
+        if predicted is not None:
+            # 標準偏差の差
+            difference = abs(np.std(self.df_train_Y) - np.std(np.array(predicted)))
+
+        return mean_squared_errors, r2_scores, difference, self.o_params
+
     def process_csv(self, predicted):
         """csv出力処理"""
 
@@ -429,7 +459,7 @@ class machine_learning:
 
         return estimator
 
-    def make_bag_ada_estimator(self, estimator):
+    def make_bagada_cls_estimator(self, estimator):
         """バギング/アダブースト推定器作成"""
 
         if COMBO_ITEM_BAGGING == self.params[PARAM_BAGADA]:
@@ -437,7 +467,7 @@ class machine_learning:
             if True == self.do_bagada_gridsearch:
                 estimator = BaggingClassifier(base_estimator=estimator, random_state=0)
                 bagging_param_grid = self.make_bagada_param_grid()
-                estimator = self.get_grid_search_estimator(estimator, self.X_train, self.y_train, bagging_param_grid)
+                estimator = self.get_grid_search_estimator(estimator, bagging_param_grid)
 
             else:
                 estimator = BaggingClassifier(base_estimator=estimator,
@@ -452,13 +482,47 @@ class machine_learning:
             if True == self.do_bagada_gridsearch:
                 estimator = AdaBoostClassifier(base_estimator=estimator, random_state=0)
                 bagging_param_grid = self.make_bagada_param_grid()
-                estimator = self.get_grid_search_estimator(estimator, self.X_train, self.y_train, bagging_param_grid)
+                estimator = self.get_grid_search_estimator(estimator, bagging_param_grid)
 
             else:
                 estimator = AdaBoostClassifier(base_estimator=estimator,
                                                n_estimators=self.params[PARAM_BA_NESTIMATOR][0],
                                                learning_rate=self.params[PARAM_BA_LEARNINGRATE][0],
                                                algorithm='SAMME', random_state=0)
+                estimator.fit(self.X_train, self.y_train)
+
+        return estimator
+
+    def make_bagada_prd_estimator(self, estimator):
+        """バギング/アダブースト推定器作成"""
+
+        if COMBO_ITEM_BAGGING == self.params[PARAM_BAGADA]:
+            """バギング/アダブーストグリッドサーチ実行フラグに応じて推定器作成"""
+            if True == self.do_bagada_gridsearch:
+                estimator = BaggingRegressor(base_estimator=estimator, random_state=0)
+                bagging_param_grid = self.make_bagada_param_grid()
+                estimator = self.get_grid_search_estimator(estimator, bagging_param_grid, scoring='explained_variance')
+
+            else:
+                estimator = BaggingRegressor(base_estimator=estimator,
+                                              n_estimators=self.params[PARAM_BA_NESTIMATOR][0],
+                                              max_samples=self.params[PARAM_BA_MAXSAMPLES][0],
+                                              max_features=self.params[PARAM_BA_MAX_FEATURES][0],
+                                              random_state=0)
+                estimator.fit(self.X_train, self.y_train)
+
+        elif COMBO_ITEM_ADABOOST == self.params[PARAM_BAGADA]:
+            """バギング/アダブーストグリッドサーチ実行フラグに応じて推定器作成"""
+            if True == self.do_bagada_gridsearch:
+                estimator = AdaBoostRegressor(base_estimator=estimator, random_state=0)
+                bagging_param_grid = self.make_bagada_param_grid()
+                estimator = self.get_grid_search_estimator(estimator, bagging_param_grid, scoring='explained_variance')
+
+            else:
+                estimator = AdaBoostRegressor(base_estimator=estimator,
+                                              n_estimators=self.params[PARAM_BA_NESTIMATOR][0],
+                                              learning_rate=self.params[PARAM_BA_LEARNINGRATE][0],
+                                            random_state=0)
                 estimator.fit(self.X_train, self.y_train)
 
         return estimator
@@ -487,7 +551,7 @@ class machine_learning:
             estimator.fit(self.X_train, self.y_train)
 
         """バギング/アダブースト推定器作成"""
-        estimator = self.make_bag_ada_estimator(estimator)
+        estimator = self.make_bagada_cls_estimator(estimator)
 
         return estimator
 
@@ -506,7 +570,7 @@ class machine_learning:
             estimator.fit(self.X_train, self.y_train)
 
         """バギング/アダブースト推定器作成"""
-        estimator = self.make_bag_ada_estimator(estimator)
+        estimator = self.make_bagada_cls_estimator(estimator)
 
         return estimator
 
@@ -526,7 +590,7 @@ class machine_learning:
             estimator.fit(self.X_train, self.y_train)
 
         """バギング/アダブースト推定器作成"""
-        estimator = self.make_bag_ada_estimator(estimator)
+        estimator = self.make_bagada_cls_estimator(estimator)
 
         return estimator
 
@@ -545,7 +609,7 @@ class machine_learning:
             estimator.fit(self.X_train, self.y_train)
 
         """バギング/アダブースト推定器作成"""
-        estimator = self.make_bag_ada_estimator(estimator)
+        estimator = self.make_bagada_cls_estimator(estimator)
 
         return estimator
 
@@ -564,7 +628,26 @@ class machine_learning:
             estimator.fit(self.X_train, self.y_train)
 
         """バギング/アダブースト推定器作成"""
-        estimator = self.make_bag_ada_estimator(estimator)
+        estimator = self.make_bagada_cls_estimator(estimator)
+
+        return estimator
+
+    def LinearRegression_(self):
+        """線形回帰実行"""
+
+        estimator = None
+
+        """分析グリッドサーチ実行フラグに応じて推定器作成"""
+        if True == self.do_analysis_gridsearch:
+            estimator = LinearRegression()
+            estimator = self.make_grid_search_estimator(estimator)
+
+        else:
+            estimator = LinearRegression()
+            estimator.fit(self.X_train, self.y_train)
+
+        """バギング/アダブースト推定器作成"""
+        estimator = self.make_bagada_prd_estimator(estimator)
 
         return estimator
 
@@ -577,9 +660,6 @@ class Classifier(machine_learning):
 
     def run_learning(self):
         """学習実行"""
-
-        """訓練データを訓練用とテスト用に分割"""
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.df_train_X, self.df_train_Y, test_size=TEST_SIZE, random_state=0)
 
         """分析手法別に学習実施"""
         estimator = None
@@ -610,7 +690,7 @@ class Predictor(machine_learning):
 
         """分析手法別に学習実施"""
         if COMBO_ITEM_LINEARREGRESSION == self.params[PARAM_ANALYSIS]:
-            pass
+            estimator = super().LinearRegression_()
         elif COMBO_ITEM_ELASTICNET == self.params[PARAM_ANALYSIS]:
             pass
         elif COMBO_ITEM_RANDOMFOREST_PRD == self.params[PARAM_ANALYSIS]:
@@ -621,3 +701,5 @@ class Predictor(machine_learning):
             pass
         else:
             print('該当分析手法なし')
+
+        return estimator
