@@ -223,6 +223,7 @@ class machine_learning:
         for f in range(X.shape[1]):
             label = labels[indices[f]]
             importance = importances[indices[f]]
+            print("%2d) %-*s %f" % (f + 1, 30, label, importance))
 
             list_for_delete_column.append(label)
 
@@ -352,7 +353,8 @@ class machine_learning:
         gs.fit(self.X_train, self.y_train)
 
         """ベース推定器ごとに処理を分けて出力用パラメータ辞書作成"""
-        if type(estimator) == BaggingClassifier or type(estimator) == AdaBoostClassifier:
+        if type(estimator) == BaggingClassifier or type(estimator) == AdaBoostClassifier\
+                or type(estimator) == BaggingRegressor or type(estimator) == AdaBoostRegressor:
             self._make_output_dict_for_BagAda(gs.best_params_)
         elif type(estimator) == SVC:
             self._make_output_dict_for_SVM(gs.best_params_)
