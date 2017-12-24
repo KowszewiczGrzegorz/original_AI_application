@@ -140,10 +140,13 @@ class machine_learning:
 
                 continue
 
-            """ガンマパラメータはfloatも文字列も取りうるので別処理"""
+            """パラメータによってはfloatも文字列も取りうるので別処理"""
             if (PARAM_GAMMA == key) and ('auto' in hyper_param):
                 hyper_param = ['auto']
-
+            elif (PARAM_MAXFEATURES == key) and ('auto' in hyper_param):
+                hyper_param = ['auto']
+            elif (PARAM_MAXDEPTH == key) and ('None' in hyper_param):
+                hyper_param = [None]
             else:
                 # 半角数字、コンマ、ピリオドのみ抽出
                 hyper_param = re.sub('[^0-9,.]', '', hyper_param)
@@ -159,6 +162,10 @@ class machine_learning:
                     hyper_param = list(map(int, hyper_param))
 
             self.params[key] = hyper_param
+
+            """ハイパーパラメータがNoneの場合はこの時点で終了"""
+            if hyper_param[0] is None:
+                continue
 
             """分析・バグアダに応じてハイパーパラメータが2つ以上の場合はグリッドサーチ実行フラグ有効化"""
             if (key == PARAM_BA_NESTIMATOR) or (key == PARAM_BA_MAXSAMPLES)\
@@ -250,7 +257,7 @@ class machine_learning:
 
         """テストデータが存在する場合は予測結果をcsv出力"""
         if self.df_test is not None:
-            predicted = pd.DataFrame(estimator.predict(self.df_test), columns=[self.predicted_label])
+            predicted = pd.DataFrame(estimator.predict(np.array(self.df_test)), columns=[self.predicted_label])
             self.process_csv(predicted)
 
         return predicted
@@ -258,7 +265,7 @@ class machine_learning:
     def _is_int_param(self, key):
         """パラメータがint型であるか判定"""
 
-        if (PARAM_NEIGHBORS == key) or (PARAM_MAXDEPTH == key) or (PARAM_MAXFEATURES == key)\
+        if (PARAM_NEIGHBORS == key) or (PARAM_MAXDEPTH == key) \
            or (PARAM_CLS_NESTIMATORS == key) or (PARAM_PRD_NESTIMATORS == key) or (PARAM_BATCHSIZE == key)\
            or (PARAM_NHIDDEN == key) or (PARAM_NUNIT == key) or (PARAM_BA_NESTIMATOR == key):
             return True
@@ -324,6 +331,13 @@ class machine_learning:
                  'max_features': self.params[PARAM_MAXFEATURES], 'max_depth': self.params[PARAM_MAXDEPTH]}
             ]
 
+        # ディープラーニング回帰
+        elif self.params[PARAM_ANALYSIS] == COMBO_ITEM_DEEPLEARNING_PRD:
+            param_grid = [
+                {'batch_size': self.params[PARAM_BATCHSIZE], 'n_hidden': self.params[PARAM_NHIDDEN],
+                 'n_unit': self.params[PARAM_NUNIT], 'keep_drop': self.params[PARAM_KEEPDROP]}
+            ]
+
         return param_grid
 
     def make_bagada_param_grid(self):
@@ -349,21 +363,45 @@ class machine_learning:
     def get_grid_search_estimator(self, estimator, param_grid, scoring='accuracy'):
         """グリッドサーチを実行し、実行後の推定器を返す"""
 
-        gs = GridSearchCV(estimator=estimator, param_grid=param_grid, scoring=scoring, cv=10, n_jobs=-1)
-        gs.fit(self.X_train, self.y_train)
+        from keras.callbacks import EarlyStopping
+        from keras.wrappers.scikit_learn import KerasRegressor
+
+        gs = GridSearchCV(estimator=estimator, param_grid=param_grid, scoring=scoring, cv=10,
+                          n_jobs=-1)
+
+        if KerasRegressor == type(estimator):
+            gs.fit(np.array(self.X_train), np.array(self.y_train), epochs=100000, shuffle=False,
+                   validation_data=(np.array(self.X_test), np.array(self.y_test)),
+                   callbacks=[EarlyStopping()])
+        else:
+            gs.fit(np.array(self.X_train), np.array(self.y_train))
+
+        """パラメータ出力表示用辞書作成"""
+        self._make_output_dict(estimator, gs.best_params_)
+
+        return gs.best_estimator_
+
+    def _make_output_dict(self, estimator, best_params):
+        """パラメータ出力表示用辞書作成"""
+
+        from keras.wrappers.scikit_learn import KerasRegressor
 
         """ベース推定器ごとに処理を分けて出力用パラメータ辞書作成"""
         if type(estimator) == BaggingClassifier or type(estimator) == AdaBoostClassifier\
                 or type(estimator) == BaggingRegressor or type(estimator) == AdaBoostRegressor:
-            self._make_output_dict_for_BagAda(gs.best_params_)
+            self._make_output_dict_for_BagAda(best_params)
         elif type(estimator) == SVC:
-            self._make_output_dict_for_SVM(gs.best_params_)
+            self._make_output_dict_for_SVM(best_params)
         elif type(estimator) == RandomForestClassifier:
-            self._make_output_dict_for_clsrandomforest(gs.best_params_)
+            self._make_output_dict_for_clsrandomforest(best_params)
+        elif type(estimator) == DecisionTreeRegressor:
+            self._make_output_dict_for_DTR(best_params)
+        elif type(estimator) == ExtraTreesRegressor:
+            self._make_output_dict_for_prdextratree(best_params)
+        elif type(estimator) == KerasRegressor:
+            self._make_output_dict_for_prddeepleaning(best_params)
         else:
-            self._make_dict(self.o_params, gs.best_params_)
-
-        return gs.best_estimator_
+            self._make_dict(self.o_params, best_params)
 
     def _make_output_dict_for_BagAda(self, best_params):
         """バギング/アダブーストのグリッドサーチ時の出力辞書作成"""
@@ -403,6 +441,32 @@ class machine_learning:
         for (key, value) in best_params.items():
             if 'n_estimators' == key:
                 self.o_params[PARAM_PRD_NESTIMATORS] = value
+            if 'max_features' == key:
+                self.o_params[PARAM_MAXFEATURES] = value
+            if 'max_depth' == key:
+                self.o_params[PARAM_MAXDEPTH] = value
+
+    def _make_output_dict_for_DTR(self, best_params):
+        """回帰決定木分析のグリッドサーチ時の出力辞書作成"""
+
+        for (key, value) in best_params.items():
+            if 'max_features' == key:
+                self.o_params[PARAM_MAXFEATURES] = value
+            if 'max_depth' == key:
+                self.o_params[PARAM_MAXDEPTH] = value
+
+    def _make_output_dict_for_prddeepleaning(self, best_params):
+        """回帰ディープラーニングのグリッドサーチ時の出力辞書作成"""
+
+        for (key, value) in best_params.items():
+            if 'batch_size' == key:
+                self.o_params[PARAM_BATCHSIZE] = value
+            if 'n_hidden' == key:
+                self.o_params[PARAM_NHIDDEN] = value
+            if 'n_unit' == key:
+                self.o_params[PARAM_NUNIT] = value
+            if 'keep_drop' == key:
+                self.o_params[PARAM_KEEPDROP] = value
 
     def get_classifer_result(self, estimator, predicted=None):
         """分類結果返却"""
@@ -422,8 +486,8 @@ class machine_learning:
         """予測結果返却"""
 
         """トレーニングデータのみのスコア"""
-        train_pred = estimator.predict(self.X_train)
-        test_pred = estimator.predict(self.X_test)
+        train_pred = estimator.predict(np.array(self.X_train))
+        test_pred = estimator.predict(np.array(self.X_test))
 
         # 標準二乗誤差
         train_mean_squared_error = mean_squared_error(self.y_train, train_pred)
@@ -453,11 +517,11 @@ class machine_learning:
         df_output = pd.concat([self.test_ID, predicted], axis=1)
         df_output.to_csv('predict_data.csv', index=False)
 
-    def make_grid_search_estimator(self, estimator):
+    def make_grid_search_estimator(self, estimator, scoring='accuracy'):
         """グリッドサーチ用パラメータを作成し実行"""
 
         param_grid = self.make_method_param_grid()
-        estimator = self.get_grid_search_estimator(estimator, self.X_train, self.y_train, param_grid)
+        estimator = self.get_grid_search_estimator(estimator, param_grid, scoring)
 
         return estimator
 
@@ -503,7 +567,7 @@ class machine_learning:
             if True == self.do_bagada_gridsearch:
                 estimator = BaggingRegressor(base_estimator=estimator, random_state=0)
                 bagging_param_grid = self.make_bagada_param_grid()
-                estimator = self.get_grid_search_estimator(estimator, bagging_param_grid, scoring='explained_variance')
+                estimator = self.get_grid_search_estimator(estimator, bagging_param_grid, scoring='neg_mean_absolute_error')
 
             else:
                 estimator = BaggingRegressor(base_estimator=estimator,
@@ -518,7 +582,7 @@ class machine_learning:
             if True == self.do_bagada_gridsearch:
                 estimator = AdaBoostRegressor(base_estimator=estimator, random_state=0)
                 bagging_param_grid = self.make_bagada_param_grid()
-                estimator = self.get_grid_search_estimator(estimator, bagging_param_grid, scoring='explained_variance')
+                estimator = self.get_grid_search_estimator(estimator, bagging_param_grid, scoring='neg_mean_absolute_error')
 
             else:
                 estimator = AdaBoostRegressor(base_estimator=estimator,
@@ -536,6 +600,39 @@ class machine_learning:
             making_dict[key] = value
 
         return making_dict
+
+    def _make_prd_deepleaning_model(self, n_hidden=100, n_unit=5, keep_drop=1.0):
+        """ディープラーニング回帰モデル作成"""
+
+        from keras.models import Sequential
+        from keras.layers.core import Dense, Activation, Dropout
+        from keras.layers.advanced_activations import PReLU
+        from keras.initializers import random_uniform
+
+
+        """ディープラーニングモデル設定"""
+        estimator = Sequential()
+        estimator.add(Dense(n_unit, input_dim=self.X_train.shape[1],
+                            kernel_initializer=random_uniform(seed=0), bias_initializer='zeros'))
+        # estimator.add(BatchNormalization())
+        estimator.add(PReLU())
+        estimator.add(Dropout(keep_drop))
+
+        for n in range(n_hidden):
+            estimator.add(Dense(n_unit, kernel_initializer=random_uniform(seed=0),
+                                bias_initializer='zeros'))
+            estimator.add(PReLU())
+            # estimator.add(ActivityRegularization(l1=0.01, l2=0.01))
+            # estimator.add(BatchNormalization())
+            estimator.add(Dropout(keep_drop))
+
+        estimator.add(Dense(units=1, kernel_initializer=random_uniform(seed=0), bias_initializer='zeros'))
+        # estimator.add(BatchNormalization())
+        estimator.add(Activation('linear'))
+
+        estimator.compile(loss='mse', optimizer='adam')
+
+        return estimator
 
     def Perceptron_(self):
         """パーセプトロン実行"""
@@ -642,11 +739,108 @@ class machine_learning:
         """分析グリッドサーチ実行フラグに応じて推定器作成"""
         if True == self.do_analysis_gridsearch:
             estimator = LinearRegression()
-            estimator = self.make_grid_search_estimator(estimator)
+            estimator = self.make_grid_search_estimator(estimator, scoring='explained_variance')
 
         else:
             estimator = LinearRegression()
             estimator.fit(self.X_train, self.y_train)
+
+        """バギング/アダブースト推定器作成"""
+        estimator = self.make_bagada_prd_estimator(estimator)
+
+        return estimator
+
+    def ElasticNet_(self):
+        """Elastic回帰実行"""
+
+        estimator = None
+
+        """分析グリッドサーチ実行フラグに応じて推定器作成"""
+        if True == self.do_analysis_gridsearch:
+            estimator = ElasticNet(max_iter=1000000, random_state=0)
+            estimator = self.make_grid_search_estimator(estimator, scoring='explained_variance')
+
+        else:
+            estimator = ElasticNet(alpha=self.params[PARAM_ALPHA][0], l1_ratio=self.params[PARAM_L1RATIO][0],
+                                   max_iter=1000000, random_state=0)
+            estimator.fit(self.X_train, self.y_train)
+
+        """バギング/アダブースト推定器作成"""
+        estimator = self.make_bagada_prd_estimator(estimator)
+
+        return estimator
+
+    def DecisionTreeRegressor_(self):
+        """ランダムフォレスト回帰実行"""
+
+        estimator = None
+
+        """分析グリッドサーチ実行フラグに応じて推定器作成"""
+        if True == self.do_analysis_gridsearch:
+            estimator = DecisionTreeRegressor(random_state=0)
+            estimator = self.make_grid_search_estimator(estimator, scoring='neg_mean_absolute_error')
+
+        else:
+            estimator = DecisionTreeRegressor(max_features=self.params[PARAM_MAXFEATURES][0],
+                                              max_depth=self.params[PARAM_MAXDEPTH][0], random_state=0)
+            estimator.fit(self.X_train, self.y_train)
+
+        """バギング/アダブースト推定器作成"""
+        estimator = self.make_bagada_prd_estimator(estimator)
+
+        return estimator
+
+    def ExtraTreesRegressor_(self):
+        """エクストラツリー回帰実行"""
+
+        estimator = None
+
+        """分析グリッドサーチ実行フラグに応じて推定器作成"""
+        if True == self.do_analysis_gridsearch:
+            estimator = ExtraTreesRegressor(random_state=0)
+            estimator = self.make_grid_search_estimator(estimator, scoring='neg_mean_absolute_error')
+
+        else:
+            estimator = ExtraTreesRegressor(max_features=self.params[PARAM_MAXFEATURES][0],
+                                            max_depth=self.params[PARAM_MAXDEPTH][0],
+                                            n_estimators=self.params[PARAM_PRD_NESTIMATORS][0],
+                                            random_state=0)
+            estimator.fit(self.X_train, self.y_train)
+
+        """バギング/アダブースト推定器作成"""
+        estimator = self.make_bagada_prd_estimator(estimator)
+
+        return estimator
+
+    def DeepLearningRegressor_(self):
+        """ディープラーニング回帰実行"""
+
+        from keras.callbacks import EarlyStopping
+        from keras.wrappers.scikit_learn import KerasRegressor
+        import tensorflow as tf
+        from keras import backend as K
+
+        """GPU使用率の設定"""
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        session = tf.Session(config=config)
+
+        estimator = None
+
+        """分析グリッドサーチ実行フラグに応じて推定器作成"""
+        if True == self.do_analysis_gridsearch:
+            estimator = KerasRegressor(build_fn=self._make_prd_deepleaning_model)
+            estimator = self.make_grid_search_estimator(estimator, scoring='neg_mean_absolute_error')
+
+        else:
+            estimator = self._make_prd_deepleaning_model(self.params[PARAM_NHIDDEN][0],
+                                                         self.params[PARAM_NUNIT][0],
+                                                         self.params[PARAM_KEEPDROP][0])
+            estimator.fit(np.array(self.X_train), np.array(self.y_train),
+                          batch_size=self.params[PARAM_BATCHSIZE][0],
+                          epochs=100000, shuffle=False,
+                          validation_data=(np.array(self.X_test), np.array(self.y_test)),
+                          callbacks=[EarlyStopping()])
 
         """バギング/アダブースト推定器作成"""
         estimator = self.make_bagada_prd_estimator(estimator)
@@ -694,13 +888,13 @@ class Predictor(machine_learning):
         if COMBO_ITEM_LINEARREGRESSION == self.params[PARAM_ANALYSIS]:
             estimator = super().LinearRegression_()
         elif COMBO_ITEM_ELASTICNET == self.params[PARAM_ANALYSIS]:
-            pass
+            estimator = super().ElasticNet_()
         elif COMBO_ITEM_RANDOMFOREST_PRD == self.params[PARAM_ANALYSIS]:
-            pass
+            estimator = super().DecisionTreeRegressor_()
         elif COMBO_ITEM_EXTRATREE == self.params[PARAM_ANALYSIS]:
-            pass
-        elif COMBO_ITEM_DEEPLEARNING == self.params[PARAM_ANALYSIS]:
-            pass
+            estimator = super().ExtraTreesRegressor_()
+        elif COMBO_ITEM_DEEPLEARNING_PRD == self.params[PARAM_ANALYSIS]:
+            estimator = super().DeepLearningRegressor_()
         else:
             print('該当分析手法なし')
 

@@ -894,7 +894,7 @@ class PredictorUI(machine_learning_UI):
         self.combo_selecting_analysis_method.addItem(COMBO_ITEM_ELASTICNET)
         self.combo_selecting_analysis_method.addItem(COMBO_ITEM_RANDOMFOREST_PRD)
         self.combo_selecting_analysis_method.addItem(COMBO_ITEM_EXTRATREE)
-        self.combo_selecting_analysis_method.addItem(COMBO_ITEM_DEEPLEARNING)
+        self.combo_selecting_analysis_method.addItem(COMBO_ITEM_DEEPLEARNING_PRD)
         self.combo_selecting_analysis_method.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.combo_selecting_analysis_method.setStyleSheet(COMBO_STYLE_SELECT_PREDICTOR)
         self.combo_selecting_analysis_method.currentIndexChanged[str].connect(self._on_select_analysis_method)
@@ -1010,7 +1010,7 @@ class PredictorUI(machine_learning_UI):
             valid_ids[self.param_dictionary[PARAM_MAXDEPTH]] = True
             valid_ids[self.param_dictionary[PARAM_PRD_NESTIMATORS]] = True
 
-        elif COMBO_ITEM_DEEPLEARNING == method:
+        elif COMBO_ITEM_DEEPLEARNING_PRD == method:
             valid_ids[self.param_dictionary[PARAM_BATCHSIZE]] = True
             valid_ids[self.param_dictionary[PARAM_NHIDDEN]] = True
             valid_ids[self.param_dictionary[PARAM_NUNIT]] = True
@@ -1239,11 +1239,11 @@ class PrdResultShowerUI(ResultShowerUI):
         self.label_displaying_mse_train = QLabel(str(self.mean_squared_errors[TRAIN]), self)
         self.label_displaying_mse_test = QLabel(str(self.mean_squared_errors[TEST]), self)
         self.label_displaying_mselabel_train = QLabel(LABEL_DISPLAYING_TRAINMSE, self)
-        self.label_displaying_mselabel_test = QLabel(LABEL_DISPLAYING_TRAINMSE, self)
+        self.label_displaying_mselabel_test = QLabel(LABEL_DISPLAYING_TESTMSE, self)
         self.label_displaying_r2_train = QLabel(str(self.r2_scores[TRAIN]), self)
         self.label_displaying_r2_test = QLabel(str(self.r2_scores[TEST]), self)
         self.label_displaying_r2label_train = QLabel(LABEL_DISPLAYING_TRAINR2, self)
-        self.label_displaying_r2label_test = QLabel(LABEL_DISPLAYING_TRAINR2, self)
+        self.label_displaying_r2label_test = QLabel(LABEL_DISPLAYING_TESTR2, self)
 
         self.label_displaying_mse_train.setStyleSheet(LABEL_STYLE_SCORE)
         self.label_displaying_mse_test.setStyleSheet(LABEL_STYLE_SCORE)

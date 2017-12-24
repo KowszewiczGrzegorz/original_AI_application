@@ -33,7 +33,7 @@ COMBO_ITEM_ELASTICNET = 'Elastic回帰'
 COMBO_ITEM_RANDOMFOREST_CLS = '分類ランダムフォレスト'
 COMBO_ITEM_RANDOMFOREST_PRD = '回帰ランダムフォレスト'
 COMBO_ITEM_EXTRATREE = 'エクストラツリー'
-COMBO_ITEM_DEEPLEARNING = 'ディープラーニング'
+COMBO_ITEM_DEEPLEARNING_PRD = '回帰ディープラーニング'
 COMBO_ITEM_PERCEPTRON = 'パーセプトロン'
 COMBO_ITEM_ROGISTICREGRESSION = 'ロジスティック回帰'
 COMBO_ITEM_SVM = 'SVM'
@@ -46,7 +46,7 @@ PARAM_GAMMA = 'gamma'
 PARAM_TREE = 'n_trees'
 PARAM_NEIGHBORS = 'n_neighbors'
 PARAM_ALPHA = 'alpha'
-PARAM_L1RATIO = 'r1_ratio'
+PARAM_L1RATIO = 'l1_ratio'
 PARAM_MAXDEPTH = 'n_max_depth'
 PARAM_MAXFEATURES = 'n_max_features'
 PARAM_CLS_NESTIMATORS = 'cls_n_estimators'
@@ -230,7 +230,7 @@ COMBO_STYLE_SELECT_PREDICTOR = \
     'color: #aaff00;' \
     'font-weight: bold;' \
     'border-width: 1px; border-color: #aaff00; border-radius: 2px; border-style: solid;' \
-    'width: 92px;' \
+    'width: 114px;' \
     'padding-left:3px; padding-right:-14px; padding-top:2px; padding-bottom: 2px;' \
     '}' \
     'QComboBox:drop-down {'\
