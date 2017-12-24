@@ -363,17 +363,18 @@ class machine_learning:
     def get_grid_search_estimator(self, estimator, param_grid, scoring='accuracy'):
         """グリッドサーチを実行し、実行後の推定器を返す"""
 
+        """ディープラーニングの場合はfit()の使用法が異なる"""
         from keras.callbacks import EarlyStopping
         from keras.wrappers.scikit_learn import KerasRegressor
-
-        gs = GridSearchCV(estimator=estimator, param_grid=param_grid, scoring=scoring, cv=10,
-                          n_jobs=-1)
-
         if KerasRegressor == type(estimator):
+            gs = GridSearchCV(estimator=estimator, param_grid=param_grid, scoring=scoring, cv=10,
+                              n_jobs=1)
             gs.fit(np.array(self.X_train), np.array(self.y_train), epochs=100000, shuffle=False,
                    validation_data=(np.array(self.X_test), np.array(self.y_test)),
                    callbacks=[EarlyStopping()])
         else:
+            gs = GridSearchCV(estimator=estimator, param_grid=param_grid, scoring=scoring, cv=10,
+                              n_jobs=-1)
             gs.fit(np.array(self.X_train), np.array(self.y_train))
 
         """パラメータ出力表示用辞書作成"""
