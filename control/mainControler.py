@@ -372,7 +372,7 @@ class machine_learning:
         if KerasRegressor == type(estimator):
             gs.fit(np.array(self.X_train), np.array(self.y_train), epochs=1000, shuffle=False,
                    validation_data=(np.array(self.X_test), np.array(self.y_test)),
-                   callbacks=[EarlyStopping()])
+                   callbacks=[EarlyStopping(patience=5)])
         else:
             gs.fit(np.array(self.X_train), np.array(self.y_train))
 
@@ -609,6 +609,50 @@ class machine_learning:
         from keras.layers.advanced_activations import PReLU
         from keras.initializers import random_uniform
 
+        # 四捨五入関数設定
+        round = lambda x: (x * 2 + 1) // 2
+
+        """ディープラーニングモデル設定"""
+        estimator = Sequential()
+        estimator.add(Dense(n_unit, input_dim=self.X_train.shape[1],
+                            kernel_initializer=random_uniform(seed=0), bias_initializer='zeros'))
+        # estimator.add(BatchNormalization())
+        estimator.add(PReLU())
+        estimator.add(Dropout(keep_drop))
+
+        # 隠れ層を下るごとに減らすユニット数
+        n_minus_of_unit = n_unit / n_hidden
+        if n_minus_of_unit == 0:
+            n_minus_of_unit = 1
+
+        for n in range(n_hidden):
+            estimator.add(Dense(n_unit, kernel_initializer=random_uniform(seed=0),
+                                bias_initializer='zeros'))
+            estimator.add(PReLU())
+            # estimator.add(ActivityRegularization(l1=0.01, l2=0.01))
+            # estimator.add(BatchNormalization())
+            estimator.add(Dropout(keep_drop))
+
+            n_unit = int(round(n_unit - n_minus_of_unit))
+            if n_unit < 1:
+                n_unit = 1
+
+        estimator.add(Dense(units=1, kernel_initializer=random_uniform(seed=0), bias_initializer='zeros'))
+        # estimator.add(BatchNormalization())
+        estimator.add(Activation('linear'))
+
+        estimator.compile(loss='mse', optimizer='adam')
+
+        return estimator
+
+    def _make_cls_deepleaning_model(self, n_hidden=100, n_unit=5, keep_drop=1.0):
+        """ディープラーニング回帰モデル作成"""
+
+        from keras.models import Sequential
+        from keras.layers.core import Dense, Activation, Dropout
+        from keras.layers.advanced_activations import PReLU
+        from keras.initializers import random_uniform
+
 
         """ディープラーニングモデル設定"""
         estimator = Sequential()
@@ -628,9 +672,9 @@ class machine_learning:
 
         estimator.add(Dense(units=1, kernel_initializer=random_uniform(seed=0), bias_initializer='zeros'))
         # estimator.add(BatchNormalization())
-        estimator.add(Activation('linear'))
+        estimator.add(Activation('softmax'))
 
-        estimator.compile(loss='mse', optimizer='adam')
+        estimator.compile(loss='binary_crossentropy')
 
         return estimator
 
@@ -821,8 +865,8 @@ class machine_learning:
 
         """GPU使用率の設定"""
         config = tf.ConfigProto()
-        config.gpu_options.allow_growth = True
-        tf.Session(config=config)
+        config.gpu_options.per_process_gpu_memory_fraction = 1.0
+        session = tf.Session(config=config)
 
         estimator = None
 
