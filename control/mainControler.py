@@ -633,6 +633,7 @@ class machine_learning:
             # estimator.add(BatchNormalization())
             estimator.add(Dropout(keep_drop))
 
+            """次階層で使用するユニット数を減らす"""
             n_unit = int(round(n_unit - n_minus_of_unit))
             if n_unit < 1:
                 n_unit = 1
@@ -641,18 +642,20 @@ class machine_learning:
         # estimator.add(BatchNormalization())
         estimator.add(Activation('linear'))
 
-        estimator.compile(loss='mse', optimizer='adam')
+        estimator.compile(loss='mean_squared_error', optimizer='adam')
 
         return estimator
 
     def _make_cls_deepleaning_model(self, n_hidden=100, n_unit=5, keep_drop=1.0):
-        """ディープラーニング回帰モデル作成"""
+        """ディープラーニング分類モデル作成"""
 
         from keras.models import Sequential
         from keras.layers.core import Dense, Activation, Dropout
         from keras.layers.advanced_activations import PReLU
         from keras.initializers import random_uniform
 
+        # 四捨五入関数設定
+        round = lambda x: (x * 2 + 1) // 2
 
         """ディープラーニングモデル設定"""
         estimator = Sequential()
@@ -662,6 +665,11 @@ class machine_learning:
         estimator.add(PReLU())
         estimator.add(Dropout(keep_drop))
 
+        # 隠れ層を下るごとに減らすユニット数
+        n_minus_of_unit = n_unit / n_hidden
+        if n_minus_of_unit == 0:
+            n_minus_of_unit = 1
+
         for n in range(n_hidden):
             estimator.add(Dense(n_unit, kernel_initializer=random_uniform(seed=0),
                                 bias_initializer='zeros'))
@@ -670,11 +678,16 @@ class machine_learning:
             # estimator.add(BatchNormalization())
             estimator.add(Dropout(keep_drop))
 
+            """次階層で使用するユニット数を減らす"""
+            n_unit = int(round(n_unit - n_minus_of_unit))
+            if n_unit < 1:
+                n_unit = 1
+
         estimator.add(Dense(units=1, kernel_initializer=random_uniform(seed=0), bias_initializer='zeros'))
         # estimator.add(BatchNormalization())
         estimator.add(Activation('softmax'))
 
-        estimator.compile(loss='binary_crossentropy')
+        estimator.compile(loss='categorical_crossentropy', optimizer='adam')
 
         return estimator
 
@@ -883,7 +896,7 @@ class machine_learning:
                           batch_size=self.params[PARAM_BATCHSIZE][0],
                           epochs=100000, shuffle=False,
                           validation_data=(np.array(self.X_test), np.array(self.y_test)),
-                          callbacks=[EarlyStopping()])
+                          callbacks=[EarlyStopping(patience=3)])
 
         """バギング/アダブースト推定器作成"""
         estimator = self.make_bagada_prd_estimator(estimator)
