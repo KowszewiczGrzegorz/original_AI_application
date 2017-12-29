@@ -180,6 +180,10 @@ class machine_learning_UI(QDialog):
         self.param_gamma = str(DEFAULT_GAMMA)
         self.param_neighbors = str(DEFAULT_NEIGHBORS)
         self.param_nestimators = str(DEFAULT_NESTIMATORS)
+        self.param_batchsize = str(DEFAULT_BATCHSIZE)
+        self.param_nhidden = str(DEFAULT_NHIDDEN)
+        self.param_nunit = str(DEFAULT_NUNIT)
+        self.param_keepdrop = str(DEFAULT_KEEPDROP)
         self.classifier_param_dict = OrderedDict()
         self.classifier_param_dict[PARAM_PENALTY] = self.param_penalty
         self.classifier_param_dict[PARAM_KERNEL] = self.param_kernel
@@ -188,6 +192,10 @@ class machine_learning_UI(QDialog):
         self.classifier_param_dict[PARAM_GAMMA] = self.param_gamma
         self.classifier_param_dict[PARAM_NEIGHBORS] = self.param_neighbors
         self.classifier_param_dict[PARAM_CLS_NESTIMATORS] = self.param_nestimators
+        self.classifier_param_dict[PARAM_BATCHSIZE] = self.param_batchsize
+        self.classifier_param_dict[PARAM_NHIDDEN] = self.param_nhidden
+        self.classifier_param_dict[PARAM_NUNIT] = self.param_nunit
+        self.classifier_param_dict[PARAM_KEEPDROP] = self.param_keepdrop
         self.classifier_param_dict_for_export = OrderedDict()
 
         self.param_alpha = str(DEFAULT_ALPHA)
@@ -195,10 +203,6 @@ class machine_learning_UI(QDialog):
         self.param_maxfeatures = str(DEFAULT_MAXFEATURES)
         self.param_maxdepth = str(DEFAULT_MAXDEPTH)
         self.param_nestimators = str(DEFAULT_NESTIMATORS)
-        self.param_batchsize = str(DEFAULT_BATCHSIZE)
-        self.param_nhidden = str(DEFAULT_NHIDDEN)
-        self.param_nunit = str(DEFAULT_NUNIT)
-        self.param_keepdrop = str(DEFAULT_KEEPDROP)
         self.predictor_param_dict = OrderedDict()
         self.predictor_param_dict[PARAM_ALPHA] = self.param_alpha
         self.predictor_param_dict[PARAM_L1RATIO] = self.param_l1ratio
@@ -698,6 +702,10 @@ class ClassifierUI(machine_learning_UI):
         self.label_displaying_param_gamma = super()._make_label_wiget(PARAM_GAMMA, self, LABEL_STYLE_PARAM_INVALID)
         self.label_displaying_param_neighbors = super()._make_label_wiget(PARAM_NEIGHBORS, self, LABEL_STYLE_PARAM_INVALID)
         self.label_displaying_param_nestimators = super()._make_label_wiget(PARAM_CLS_NESTIMATORS, self, LABEL_STYLE_PARAM_INVALID)
+        self.label_displaying_param_batchsize = super()._make_label_wiget(PARAM_BATCHSIZE, self, LABEL_STYLE_PARAM_INVALID)
+        self.label_displaying_param_nhidden = super()._make_label_wiget(PARAM_NHIDDEN, self, LABEL_STYLE_PARAM_INVALID)
+        self.label_displaying_param_nunit = super()._make_label_wiget(PARAM_NUNIT, self, LABEL_STYLE_PARAM_INVALID)
+        self.label_displaying_param_keepdrop = super()._make_label_wiget(PARAM_KEEPDROP, self, LABEL_STYLE_PARAM_INVALID)
 
         """コンボボックスウィジェット定義"""
         self.combo_selecting_analysis_method = QComboBox(self)
@@ -706,6 +714,7 @@ class ClassifierUI(machine_learning_UI):
         self.combo_selecting_analysis_method.addItem(COMBO_ITEM_SVM)
         self.combo_selecting_analysis_method.addItem(COMBO_ITEM_RANDOMFOREST_CLS)
         self.combo_selecting_analysis_method.addItem(COMBO_ITEM_KNEIGHBORS)
+        self.combo_selecting_analysis_method.addItem(COMBO_ITEM_DEEPLEARNING_CLS)
         self.combo_selecting_analysis_method.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.combo_selecting_analysis_method.setStyleSheet(COMBO_STYLE_SELECT_CLASSIFIER)
         self.combo_selecting_analysis_method.currentIndexChanged[str].connect(self._on_select_analysis_method)
@@ -721,6 +730,10 @@ class ClassifierUI(machine_learning_UI):
         self.ledit_param_gamma = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_GAMMA, DEFAULT_GAMMA)
         self.ledit_param_neighbors = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_NEIGHBORS, DEFAULT_NEIGHBORS)
         self.ledit_param_nestimators = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_CLS_NESTIMATORS, DEFAULT_NESTIMATORS)
+        self.ledit_param_batchsize = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_BATCHSIZE, DEFAULT_BATCHSIZE)
+        self.ledit_param_nhidden = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_NHIDDEN, DEFAULT_NHIDDEN)
+        self.ledit_param_nunit = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_NUNIT, DEFAULT_NUNIT)
+        self.ledit_param_keepdroop = super()._make_param_ledit(INPUT_STYLE_PARAMS_INVALID, PARAM_KEEPDROP, DEFAULT_KEEPDROP)
 
         """ボタンウィジェット定義"""
         self.button_running_machine_learning = QPushButton(BUTTON_RUNNING_MACHINE_LEARNING, self)
@@ -748,6 +761,14 @@ class ClassifierUI(machine_learning_UI):
         grid.addWidget(self.ledit_param_neighbors, 2, 3)
         grid.addWidget(self.label_displaying_param_nestimators, 3, 0)
         grid.addWidget(self.ledit_param_nestimators, 3, 1)
+        grid.addWidget(self.label_displaying_param_batchsize, 3, 2)
+        grid.addWidget(self.ledit_param_batchsize, 3,3)
+        grid.addWidget(self.label_displaying_param_nhidden, 4, 0)
+        grid.addWidget(self.ledit_param_nhidden, 4, 1)
+        grid.addWidget(self.label_displaying_param_nunit, 4, 2)
+        grid.addWidget(self.ledit_param_nunit, 4, 3)
+        grid.addWidget(self.label_displaying_param_keepdrop, 5, 0)
+        grid.addWidget(self.ledit_param_keepdroop, 5, 1)
 
         vbox.addWidget(self.label_displaying_classifier_method)
         vbox.addWidget(self.combo_selecting_analysis_method)
@@ -766,7 +787,11 @@ class ClassifierUI(machine_learning_UI):
                                    self.label_displaying_param_C,
                                    self.label_displaying_param_gamma,
                                    self.label_displaying_param_neighbors,
-                                   self.label_displaying_param_nestimators)
+                                   self.label_displaying_param_nestimators,
+                                   self.label_displaying_param_batchsize,
+                                   self.label_displaying_param_nhidden,
+                                   self.label_displaying_param_nunit,
+                                   self.label_displaying_param_keepdrop)
 
         self.param_input_wigets = (self.combo_selecting_penalty,
                                    self.combo_selecting_kernel,
@@ -774,7 +799,11 @@ class ClassifierUI(machine_learning_UI):
                                    self.ledit_param_C,
                                    self.ledit_param_gamma,
                                    self.ledit_param_neighbors,
-                                   self.ledit_param_nestimators)
+                                   self.ledit_param_nestimators,
+                                   self.ledit_param_batchsize,
+                                   self.ledit_param_nhidden,
+                                   self.ledit_param_nunit,
+                                   self.ledit_param_keepdroop,)
 
         self.param_dictionary = {PARAM_PENALTY: 0,
                                  PARAM_KERNEL: 1,
@@ -782,7 +811,12 @@ class ClassifierUI(machine_learning_UI):
                                  PARAM_C: 3,
                                  PARAM_GAMMA: 4,
                                  PARAM_NEIGHBORS: 5,
-                                 PARAM_CLS_NESTIMATORS: 6}
+                                 PARAM_CLS_NESTIMATORS: 6,
+                                 PARAM_BATCHSIZE: 7,
+                                 PARAM_NHIDDEN: 8,
+                                 PARAM_NUNIT: 9,
+                                 PARAM_KEEPDROP: 10
+                                 }
 
         """初期化処理のためシグナル発行（インデックスを0に設定するため1度1にしている）"""
         self.combo_selecting_analysis_method.setCurrentIndex(1)
@@ -813,7 +847,13 @@ class ClassifierUI(machine_learning_UI):
             valid_ids[self.param_dictionary[PARAM_CLS_NESTIMATORS]] = True
 
         elif COMBO_ITEM_KNEIGHBORS == method:
-            valid_ids[self.param_dictionary[PARAM_NEIGHBORS]] = True
+            valid_ids[self.param_dictionary[PARAM_CLS_NESTIMATORS]] = True
+
+        elif COMBO_ITEM_DEEPLEARNING_CLS == method:
+            valid_ids[self.param_dictionary[PARAM_BATCHSIZE]] = True
+            valid_ids[self.param_dictionary[PARAM_NHIDDEN]] = True
+            valid_ids[self.param_dictionary[PARAM_NUNIT]] = True
+            valid_ids[self.param_dictionary[PARAM_KEEPDROP]] = True
 
         super()._valid_param_wiget_by_method(self.param_label_wigets,
                                              self.param_input_wigets,
@@ -874,7 +914,6 @@ class PredictorUI(machine_learning_UI):
         """ウィンドウの基本設定"""
         self.setWindowTitle(WINDOW_TITLE_PREDICTOR)
         self.setModal(False)
-
 
         """ラベルウィジェット定義"""
         self.label_displaying_predictor_method = super()._make_label_wiget(LABEL_DISPLAYING_PREDICTOR, self, LABEL_STYLE_BASIC_MSG)

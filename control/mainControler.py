@@ -308,6 +308,13 @@ class machine_learning:
                 {'n_neighbors': self.params[PARAM_NEIGHBORS]}
             ]
 
+        # ディープラーニング分類
+        elif self.params[PARAM_ANALYSIS] == COMBO_ITEM_DEEPLEARNING_CLS:
+            param_grid = [
+                {'batch_size': self.params[PARAM_BATCHSIZE], 'n_hidden': self.params[PARAM_NHIDDEN],
+                 'n_unit': self.params[PARAM_NUNIT], 'keep_drop': self.params[PARAM_KEEPDROP]}
+            ]
+
         # 線形回帰
         elif self.params[PARAM_ANALYSIS] == COMBO_ITEM_LINEARREGRESSION:
             param_grid = []
@@ -368,8 +375,9 @@ class machine_learning:
 
         """ディープラーニングの場合はfit()の使用法が異なる"""
         from keras.callbacks import EarlyStopping
-        from keras.wrappers.scikit_learn import KerasRegressor
-        if KerasRegressor == type(estimator):
+        from keras.wrappers.scikit_learn import KerasRegressor, KerasClassifier
+        if KerasClassifier == type(estimator)\
+                or KerasRegressor == type(estimator):
             gs.fit(np.array(self.X_train), np.array(self.y_train), epochs=1000, shuffle=False,
                    validation_data=(np.array(self.X_test), np.array(self.y_test)),
                    callbacks=[EarlyStopping(patience=5)])
@@ -472,8 +480,8 @@ class machine_learning:
         """分類結果返却"""
 
         """トレーニングデータのみのスコア"""
-        train_score = estimator.score(self.X_train, self.y_train)
-        test_score = estimator.score(self.X_test, self.y_test)
+        train_score = estimator.score(np.array(self.X_train), np.array(self.y_train))
+        test_score = estimator.score(np.array(self.X_test), np.array(self.y_test))
 
         """出力データを用いたスコア"""
         difference= None
@@ -601,7 +609,7 @@ class machine_learning:
 
         return making_dict
 
-    def _make_prd_deepleaning_model(self, n_hidden=100, n_unit=5, keep_drop=1.0):
+    def _make_prd_deepleaning_model(self, n_hidden=1, n_unit=5, keep_drop=1.0):
         """ディープラーニング回帰モデル作成"""
 
         from keras.models import Sequential
@@ -621,9 +629,11 @@ class machine_learning:
         estimator.add(Dropout(keep_drop))
 
         # 隠れ層を下るごとに減らすユニット数
-        n_minus_of_unit = n_unit / n_hidden
-        if n_minus_of_unit == 0:
-            n_minus_of_unit = 1
+        n_minus_of_unit = 0
+        if n_hidden != 0:
+            n_minus_of_unit = n_unit / n_hidden
+            if n_minus_of_unit == 0:
+                n_minus_of_unit = 1
 
         for n in range(n_hidden):
             estimator.add(Dense(n_unit, kernel_initializer=random_uniform(seed=0),
@@ -646,7 +656,7 @@ class machine_learning:
 
         return estimator
 
-    def _make_cls_deepleaning_model(self, n_hidden=100, n_unit=5, keep_drop=1.0):
+    def _make_cls_deepleaning_model(self, n_hidden=1, n_unit=5, keep_drop=1.0):
         """ディープラーニング分類モデル作成"""
 
         from keras.models import Sequential
@@ -654,8 +664,7 @@ class machine_learning:
         from keras.layers.advanced_activations import PReLU
         from keras.initializers import random_uniform
 
-        # 四捨五入関数設定
-        round = lambda x: (x * 2 + 1) // 2
+        # 四捨五入関数設定        round = lambda x: (x * 2 + 1) // 2
 
         """ディープラーニングモデル設定"""
         estimator = Sequential()
@@ -666,9 +675,11 @@ class machine_learning:
         estimator.add(Dropout(keep_drop))
 
         # 隠れ層を下るごとに減らすユニット数
-        n_minus_of_unit = n_unit / n_hidden
-        if n_minus_of_unit == 0:
-            n_minus_of_unit = 1
+        n_minus_of_unit = 0
+        if n_hidden != 0:
+            n_minus_of_unit = n_unit / n_hidden
+            if n_minus_of_unit == 0:
+                n_minus_of_unit = 1
 
         for n in range(n_hidden):
             estimator.add(Dense(n_unit, kernel_initializer=random_uniform(seed=0),
@@ -687,7 +698,7 @@ class machine_learning:
         # estimator.add(BatchNormalization())
         estimator.add(Activation('softmax'))
 
-        estimator.compile(loss='categorical_crossentropy', optimizer='adam')
+        estimator.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
         return estimator
 
@@ -903,6 +914,41 @@ class machine_learning:
 
         return estimator
 
+    def DeepLearningClassifer_(self):
+        """ディープラーニング分類実行"""
+
+        from keras.callbacks import EarlyStopping
+        from keras.wrappers.scikit_learn import KerasClassifier
+        import tensorflow as tf
+
+        """GPU使用率の設定"""
+        config = tf.ConfigProto()
+        config.gpu_options.per_process_gpu_memory_fraction = 1.0
+        session = tf.Session(config=config)
+
+        estimator = None
+
+        """分析グリッドサーチ実行フラグに応じて推定器作成"""
+        if True == self.do_analysis_gridsearch:
+            estimator = KerasClassifier(build_fn=self._make_cls_deepleaning_model)
+            estimator = self.make_grid_search_estimator(estimator, scoring='accuracy')
+
+        else:
+            estimator = KerasClassifier(build_fn=self._make_cls_deepleaning_model,
+                                        n_hidden=self.params[PARAM_NHIDDEN][0],
+                                        n_unit=self.params[PARAM_NUNIT][0],
+                                        keep_drop=self.params[PARAM_KEEPDROP][0])
+            estimator.fit(np.array(self.X_train), np.array(self.y_train),
+                          batch_size=self.params[PARAM_BATCHSIZE][0],
+                          epochs=100000, shuffle=False,
+                          validation_data=(np.array(self.X_test), np.array(self.y_test)),
+                          callbacks=[EarlyStopping(patience=3)])
+
+        """バギング/アダブースト推定器作成"""
+        estimator = self.make_bagada_cls_estimator(estimator)
+
+        return estimator
+
 
 class Classifier(machine_learning):
     """分類に特化した機械学習処理クラス"""
@@ -925,6 +971,8 @@ class Classifier(machine_learning):
             estimator = super().RandomForest_()
         elif COMBO_ITEM_KNEIGHBORS == self.params[PARAM_ANALYSIS]:
             estimator = super().KNeighbors_()
+        elif COMBO_ITEM_DEEPLEARNING_CLS == self.params[PARAM_ANALYSIS]:
+            estimator = super().DeepLearningClassifer_()
         else:
             print('該当分析手法なし')
 
