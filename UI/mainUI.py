@@ -1,4 +1,4 @@
-import re
+import re, sys
 from constants.constants import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
@@ -866,6 +866,10 @@ class ClassifierUI(machine_learning_UI):
     def _on_clicked_running_button(self):
         """学習実行ボタン押下時"""
 
+        """学習中ダイアログ表示"""
+        # waiting_dialog = WaitingUI(self)
+        # waiting_dialog.exec_()
+
         """分類オブジェクト作成"""
         classifier = Classifier()
 
@@ -895,6 +899,9 @@ class ClassifierUI(machine_learning_UI):
         test_score = round(test_score, NUMBER_OF_DECIMAL_DIGIT)
         if difference is not None:
             difference = round(difference, NUMBER_OF_DECIMAL_DIGIT)
+
+        """学習中ダイアログ消去"""
+        # waiting_dialog.close()
 
         """結果出力"""
         result_shower = ClsResultShowerUI(self, train_score, test_score, difference, params)
@@ -1066,6 +1073,10 @@ class PredictorUI(machine_learning_UI):
     def _on_clicked_running_button(self):
         """学習ボタン押下時"""
 
+        """学習中ダイアログ表示"""
+        # waiting_dialog = WaitingUI(self)
+        # waiting_dialog.exec_()
+
         """分類オブジェクト作成"""
         predictor = Predictor()
 
@@ -1098,9 +1109,37 @@ class PredictorUI(machine_learning_UI):
         if difference is not None:
             difference = round(difference, NUMBER_OF_DECIMAL_DIGIT)
 
+        """学習中ダイアログ消去"""
+        # waiting_dialog.close()
+
         """結果出力"""
         result_shower = PrdResultShowerUI(self, mean_squared_errors, r2_scores, difference, params)
         result_shower.show()
+
+
+class WaitingUI(QDialog):
+    """学習・予測実行中ダイアログ表示クラス"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self._initialize()
+
+    def _initialize(self):
+        """初期化"""
+
+        """ウィンドウの基本設定"""
+        self.setGeometry(340, 340, 0, 0)
+        self.setStyleSheet(WINDOW_WAITING)
+        self.setWindowFlags(Qt.FramelessWindowHint)
+
+        """ラベルウィジェット定義"""
+        label_displaying_waiting = QLabel(LABEL_DISPLAYING_WAITING)
+        label_displaying_waiting.setStyleSheet(LABEL_STYLE_WAITING)
+
+        """レイアウト設定"""
+        hbox = QHBoxLayout()
+        hbox.addWidget(label_displaying_waiting)
+        self.setLayout(hbox)
 
 
 class ResultShowerUI(QDialog):

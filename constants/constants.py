@@ -93,6 +93,7 @@ LABEL_DISPLAYING_TRAINMSE = 'Train MSE: '
 LABEL_DISPLAYING_TESTMSE = 'Test MSE: '
 LABEL_DISPLAYING_TRAINR2 = 'Train R2'
 LABEL_DISPLAYING_TESTR2 = 'Test R2'
+LABEL_DISPLAYING_WAITING = "学習・予測実行中"
 
 """数値"""
 SPACE_BETWEEN_PARTS = 15
@@ -375,4 +376,17 @@ LABEL_STYLE_SCORELABEL = \
     'QLabel {'\
     'background-color: white; color: #4a8d00;' \
     'font-family: Arial; font-size:14px;' \
+    '}'
+
+WINDOW_WAITING = \
+    "QWidget {" \
+    "background-color:#ebffe9;" \
+    "}"
+
+LABEL_STYLE_WAITING = \
+    'QLabel {'\
+    'background-color: white; color: #4a8d00;' \
+    'font-family: HG丸ｺﾞｼｯｸM-PRO; font-size:24px;' \
+    'border-width: 2px; border-color: #aaff00; border-radius: 3px; border-style: solid;' \
+    'padding: 12px;' \
     '}'
