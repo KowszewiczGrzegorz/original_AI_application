@@ -5,6 +5,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from control.mainControler import MainControler, Classifier, Predictor
 from collections import OrderedDict
+import pandas as pd
 
 
 class Main(QWidget):
@@ -30,12 +31,15 @@ class Main(QWidget):
         """ボタンウィジェット定義"""
         button_selecting_traincsv = QPushButton(BUTTON_SELECTING_TRAINCSV, self)
         button_selecting_testcsv = QPushButton(BUTTON_SELECTING_TESTCSV, self)
+        button_editing_data = QPushButton(BUTTON_EDITING_DATA, self)
 
         button_selecting_traincsv.setStyleSheet(BUTTON_STYLE_SELECT_DATA)
         button_selecting_testcsv.setStyleSheet(BUTTON_STYLE_SELECT_DATA)
+        button_editing_data.setStyleSheet(BUTTON_STYLE_EDIT_DATA)
 
         button_selecting_traincsv.clicked.connect(self._on_press_csv_button)
         button_selecting_testcsv.clicked.connect(self._on_press_csv_button)
+        button_editing_data.clicked.connect(self._on_press_editdata_button)
 
         """ラベルウィジェット定義"""
         label_displaying_selectfile = QLabel(LABEL_DISPLAYING_SELECTFILE, self)
@@ -72,16 +76,21 @@ class Main(QWidget):
         hbox2.addStretch()
 
         hbox3 = QHBoxLayout()
-        hbox3.addWidget(self.combo_selecting_cls_or_prd)
-        hbox3.addWidget(self.label_displaying_notselecting)
+        hbox3.addWidget(button_editing_data)
+        hbox3.addStretch()
+
+        hbox4 = QHBoxLayout()
+        hbox4.addWidget(self.combo_selecting_cls_or_prd)
+        hbox4.addWidget(self.label_displaying_notselecting)
 
         vbox = QVBoxLayout()
         vbox.addWidget(label_displaying_selectfile)
         vbox.addLayout(hbox1)
         vbox.addLayout(hbox2)
+        vbox.addLayout(hbox3)
         vbox.addSpacing(SPACE_BETWEEN_PARTS)
         vbox.addWidget(label_displaying_selectmethod)
-        vbox.addLayout(hbox3)
+        vbox.addLayout(hbox4)
         vbox.addStretch()
 
         self.setLayout(vbox)
@@ -155,8 +164,120 @@ class Main(QWidget):
         else:
             pass
 
+    def _on_press_editdata_button(self):
+        """データ編集ボタン押下時"""
 
-class machine_learning_UI(QDialog):
+        """トレーニングデータが未選択の場合は分類/予測を選択させない"""
+        train_df = self.main_controler.get_train_dataframe()
+        test_df = self.main_controler.get_test_dataframe()
+
+        if train_df is None:
+            self.combo_selecting_cls_or_prd.setCurrentIndex(0)
+            return
+
+        edit_dialog = EditDataUI(train_df, test_df)
+        edit_dialog.show()
+        edit_dialog.exec_()
+
+
+class EditDataUI(QDialog):
+    """データ編集ダイアログクラス"""
+
+    def __init__(self, train_data, test_data=None):
+        super().__init__()
+
+        self.train_data = train_data
+        self.test_data = test_data
+
+        self._initialize()
+
+    def _initialize(self):
+        """初期化"""
+
+        """ウィンドウの基本設定"""
+        self.setGeometry(320, 320, 880, 660)
+        self.setStyleSheet(WINDOW_APPLICATION)
+
+        """テーブルウィジェット定義"""
+        self.table_viewing_data = QTableView(self)
+        self.model = DataModel(self.train_data)
+        self.table_viewing_data.setModel(self.model)
+
+        """レイアウト設定"""
+        hbox = QHBoxLayout()
+        hbox.addWidget(self.table_viewing_data)
+
+        self.setLayout(hbox)
+
+    def keyPressEvent(self, event):
+        """キー押下イベント処理"""
+
+        """デリート押下時は選択行列数で判断しつつ削除"""
+        if event.key() == Qt.Key_Delete:
+            data_rows = self.model.rowCount()
+            data_cols = self.model.columnCount()
+
+            indexes = self.table_viewing_data.selectedIndexes()
+            indexes = [(index.row(), index.column())for index in indexes]
+            selected_rows = set([index[ROW] for index in indexes])
+            selected_cols = set([index[COL] for index in indexes])
+
+            """選択行数がデータ行数と同じなら列削除"""
+            if len(selected_rows) == data_rows:
+                self.model.remove_line(selected_cols, axis=1)
+
+            """選択列数がデータ列数と同じなら行削除"""
+            if len(selected_cols) == data_cols:
+                self.model.remove_line(selected_rows, axis=0)
+
+
+class DataModel(QAbstractItemModel):
+    """テーブルモデルクラス"""
+
+    def __init__(self, datas, parent=None):
+        super().__init__(parent)
+        self.columns = datas.columns
+        self.datas = datas.values.tolist()
+
+    def index(self, row, column, parent=QModelIndex()):
+        return self.createIndex(row, column, None)
+
+    def parent(self, child):
+        return QModelIndex()
+
+    def rowCount(self, parent=QModelIndex()):
+        return len(self.datas)
+
+    def columnCount(self, parent=QModelIndex()):
+        if self.datas:
+            return max([len(data) for data in self.datas])
+        return 0
+
+    def data(self, index, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole:
+            try:
+                return self.datas[index.row()][index.column()]
+            except:
+                return None
+        return
+
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if role != Qt.DisplayRole:
+            return
+        if orientation == Qt.Horizontal:
+            return self.columns[section]
+
+    def remove_line(self, lines, axis):
+        """行または列の削除"""
+
+        tmp_df = pd.DataFrame(self.datas)
+        tmp_df = tmp_df.drop(lines, axis=axis)
+        self.beginResetModel()
+        self.datas = tmp_df.values.tolist()
+        self.endResetModel()
+
+        
+class MachineLearningUI(QDialog):
     """機械学習系UI親クラス"""
 
     def __init__(self):
@@ -680,7 +801,7 @@ class machine_learning_UI(QDialog):
                     del export_dict[key]
 
 
-class ClassifierUI(machine_learning_UI):
+class ClassifierUI(MachineLearningUI):
     """分類UIクラス"""
 
     def __init__(self):
@@ -908,7 +1029,7 @@ class ClassifierUI(machine_learning_UI):
         result_shower.show()
 
 
-class PredictorUI(machine_learning_UI):
+class PredictorUI(MachineLearningUI):
     """予測UIクラス"""
 
     def __init__(self):

@@ -94,6 +94,7 @@ LABEL_DISPLAYING_TESTMSE = 'Test MSE: '
 LABEL_DISPLAYING_TRAINR2 = 'Train R2'
 LABEL_DISPLAYING_TESTR2 = 'Test R2'
 LABEL_DISPLAYING_WAITING = "学習・予測実行中"
+BUTTON_EDITING_DATA = 'データ編集'
 
 """数値"""
 SPACE_BETWEEN_PARTS = 15
@@ -125,6 +126,8 @@ NUMBER_OF_DECIMAL_DIGIT = 3
 N_COLUMN_IN_PARAM_RESULT = 4
 TRAIN = 0
 TEST = 1
+ROW = 0
+COL = 1
 
 """パス"""
 APPLICATION_ICON_PATH = '../UI/images/icon_ai.png'
@@ -389,4 +392,18 @@ LABEL_STYLE_WAITING = \
     'font-family: HG丸ｺﾞｼｯｸM-PRO; font-size:24px;' \
     'border-width: 2px; border-color: #aaff00; border-radius: 3px; border-style: solid;' \
     'padding: 12px;' \
+    '}'
+
+BUTTON_STYLE_EDIT_DATA = \
+    'QPushButton:!pressed {'\
+    'background-color: white; color: #aaff00;' \
+    'font-family: Arial; font-weight: bold; font-size:14px;' \
+    'border-width: 1px; border-color: #aaff00; border-radius: 2px; border-style: solid;' \
+    'width: 75px;' \
+    '}' \
+    'QPushButton:pressed {'\
+    'background-color: #aaff00; color: white;' \
+    'font-family: Arial; font-weight: bold; font-size:14px;' \
+    'border-width: 0px; border-radius: 2px;' \
+    'width: 50px;' \
     '}'
